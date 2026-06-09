@@ -458,6 +458,7 @@
                             <tr><th>LGU</th><th>Province</th><th>LGU Type</th><th>Status</th><th>RA Code</th><th>TPAP Summary</th><th>Date</th><th>Actions</th></tr>
                         </thead>
                         <tbody id="recordsTableBody"><tr><td colspan="8" style="text-align:center;">Loading......</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -513,21 +514,29 @@ function logout() {
 // ==================== GOOGLE SHEETS FUNCTIONS ====================
 async function sendToGoogleSheets(recordData) {
     try {
+        // Use POST with proper CORS mode
         const response = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(recordData)
         });
         
-        console.log('Data sent to Google Sheets:', recordData.lguName, recordData.id);
-        updateSyncStatus('success', 'Last sync: ' + new Date().toLocaleTimeString());
-        return true;
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Google Sheets response:', result);
+            updateSyncStatus('success', 'Last sync: ' + new Date().toLocaleTimeString());
+            return true;
+        } else {
+            console.error('HTTP Error:', response.status);
+            updateSyncStatus('error', 'Sync failed: HTTP ' + response.status);
+            return false;
+        }
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
-        updateSyncStatus('error', 'Sync failed');
+        updateSyncStatus('error', 'Sync failed: ' + error.message);
         return false;
     }
 }
@@ -569,7 +578,7 @@ async function syncAllToGoogleSheets() {
             timestamp: record.timestamp
         });
         if (success) successCount++;
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
     
     showToast(`✓ Synced ${successCount} of ${myRecords.length} records to Google Sheets`);
@@ -796,7 +805,7 @@ async function saveClupRecord(event) {
     
     // Send to Google Sheets
     showToast('Saving and syncing to Google Sheets...');
-    await sendToGoogleSheets({
+    const syncSuccess = await sendToGoogleSheets({
         id: record.id,
         lguName: record.lguName,
         province: record.province,
@@ -811,7 +820,12 @@ async function saveClupRecord(event) {
     
     resetClupForm();
     loadMyRecords();
-    showToast(`✓ CLUP saved and synced: ${lguName}`);
+    
+    if (syncSuccess) {
+        showToast(`✓ CLUP saved and synced to Google Sheets: ${lguName}`);
+    } else {
+        showToast(`⚠️ CLUP saved locally but Google Sheets sync failed: ${lguName}`);
+    }
     switchTab('records');
 }
 
@@ -944,7 +958,7 @@ function showToast(msg) {
     t.innerText = msg; 
     t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#166953;color:white;padding:12px 24px;border-radius:40px;z-index:9999;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.2);'; 
     document.body.appendChild(t); 
-    setTimeout(() => t.remove(), 2800);
+    setTimeout(() => t.remove(), 4000);
 }
 
 function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
