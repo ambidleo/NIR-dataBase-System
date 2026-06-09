@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DHSUD | LGU Portal Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Inter", sans-serif;
+            background: linear-gradient(135deg, #0a3b2c 0%, #166953 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+        }
+        .login-card {
+            background: white;
+            border-radius: 48px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.4s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .logo h1 {
+            color: #166953;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .logo p {
+            color: #6b8f80;
+            font-size: 0.85rem;
+        }
+        .login-card h2 {
+            color: #0f2b3a;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+        .sub {
+            color: #6b8f80;
+            margin-bottom: 1.8rem;
+            font-size: 0.85rem;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #2c5e4a;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        .login-input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 1.5px solid #e2eef0;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-family: "Inter", sans-serif;
+            transition: 0.2s;
+        }
+        .login-input:focus {
+            outline: none;
+            border-color: #166953;
+            box-shadow: 0 0 0 3px rgba(22,105,83,0.1);
+        }
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #166953;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            transition: 0.2s;
+        }
+        .login-btn:hover {
+            background: #0e4f3e;
+            transform: translateY(-2px);
+        }
+        .login-error {
+            color: #dc2626;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            text-align: center;
+            padding: 8px;
+            background: #fee;
+            border-radius: 12px;
+            display: none;
+        }
+        .hint-box {
+            background: #f0f8f4;
+            padding: 12px;
+            border-radius: 16px;
+            margin-top: 1.5rem;
+        }
+        .hint-box p {
+            font-size: 0.7rem;
+            color: #56786a;
+            margin: 4px 0;
+        }
+        .hint-box strong {
+            color: #166953;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.7rem;
+        }
+        .password-hint {
+            font-size: 0.65rem;
+            color: #8ba39a;
+            margin-top: 5px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <h1>📋 DHSUD</h1>
+                <p>Region VI - Negros Island</p>
+            </div>
+            <h2>🔐 LGU Portal Login</h2>
+            <p class="sub">Access your CLUP Data Entry System</p>
+            
+            <div class="input-group">
+                <label>🏙️ LGU NAME</label>
+                <input type="text" id="loginUsername" class="login-input" placeholder="e.g., Bacolod City" autocomplete="off">
+            </div>
+            
+            <div class="input-group">
+                <label>🔑 PASSWORD</label>
+                <input type="password" id="loginPassword" class="login-input" placeholder="Enter your password" autocomplete="off">
+                <div class="password-hint">Hint: [lguname]2024 (e.g., bacolod2024)</div>
+            </div>
+            
+            <button class="login-btn" onclick="attemptLogin()">→ Login to Dashboard</button>
+            <div id="loginError" class="login-error"></div>
+            
+            <div class="hint-box">
+                <p><strong>📌 Demo Accounts:</strong></p>
+                <p>• Bacolod City / Password: <strong>bacolod2024</strong></p>
+                <p>• Dumaguete City / Password: <strong>dumaguete2024</strong></p>
+                <p>• Siquijor / Password: <strong>siquijor2024</strong></p>
+                <p style="margin-top: 6px;">💡 Each LGU has its own account using: <strong>[lguname]2024</strong></p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Department of Human Settlements and Urban Development</p>
+        </div>
+    </div>
+
+    <script>
+        // LGU Accounts Database
+        const lguAccounts = [
+            // Negros Occidental
+            { username: "Bacolod City", password: "bacolod2024", province: "Negros Occidental", type: "City" },
+            { username: "Bago City", password: "bago2024", province: "Negros Occidental", type: "City" },
+            { username: "Cadiz City", password: "cadiz2024", province: "Negros Occidental", type: "City" },
+            { username: "Escalante City", password: "escalante2024", province: "Negros Occidental", type: "City" },
+            { username: "Himamaylan City", password: "himamaylan2024", province: "Negros Occidental", type: "City" },
+            { username: "Kabankalan City", password: "kabankalan2024", province: "Negros Occidental", type: "City" },
+            { username: "La Carlota City", password: "lacarlota2024", province: "Negros Occidental", type: "City" },
+            { username: "Sagay City", password: "sagay2024", province: "Negros Occidental", type: "City" },
+            { username: "San Carlos City", password: "sancarlos2024", province: "Negros Occidental", type: "City" },
+            { username: "Silay City", password: "silay2024", province: "Negros Occidental", type: "City" },
+            { username: "Sipalay City", password: "sipalay2024", province: "Negros Occidental", type: "City" },
+            { username: "Talisay City", password: "talisay2024", province: "Negros Occidental", type: "City" },
+            { username: "Victorias City", password: "victorias2024", province: "Negros Occidental", type: "City" },
+            { username: "Binalbagan", password: "binalbagan2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Calatrava", password: "calatrava2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Candoni", password: "candoni2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Cauayan", password: "cauayan2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Enrique B. Magalona", password: "enriquebmagalona2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Hinigaran", password: "hinigaran2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Hinoba-an", password: "hinobaan2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Ilog", password: "ilog2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Isabela", password: "isabela2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "La Castellana", password: "lacastellana2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Manapla", password: "manapla2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Moises Padilla", password: "moisespadilla2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Murcia", password: "murcia2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Pontevedra", password: "pontevedra2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Pulupandan", password: "pulupandan2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Salvador Benedicto", password: "salvadorbenedicto2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "San Enrique", password: "sanenrique2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Toboso", password: "toboso2024", province: "Negros Occidental", type: "Municipality" },
+            { username: "Valladolid", password: "valladolid2024", province: "Negros Occidental", type: "Municipality" },
+            // Negros Oriental
+            { username: "Dumaguete City", password: "dumaguete2024", province: "Negros Oriental", type: "City" },
+            { username: "Bais City", password: "bais2024", province: "Negros Oriental", type: "City" },
+            { username: "Bayawan City", password: "bayawan2024", province: "Negros Oriental", type: "City" },
+            { username: "Canlaon City", password: "canlaon2024", province: "Negros Oriental", type: "City" },
+            { username: "Guihulngan City", password: "guihulngan2024", province: "Negros Oriental", type: "City" },
+            { username: "Tanjay City", password: "tanjay2024", province: "Negros Oriental", type: "City" },
+            { username: "Amlan", password: "amlan2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Ayungon", password: "ayungon2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Bacong", password: "bacong2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Basay", password: "basay2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Bindoy", password: "bindoy2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Dauin", password: "dauin2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Jimalalud", password: "jimalalud2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "La Libertad", password: "lalibertad2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Mabinay", password: "mabinay2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Manjuyod", password: "manjuyod2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Pamplona", password: "pamplona2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "San Jose", password: "sanjose2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Santa Catalina", password: "santacatalina2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Siaton", password: "siaton2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Sibulan", password: "sibulan2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Tayasan", password: "tayasan2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Valencia", password: "valencia2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Vallehermoso", password: "vallehermoso2024", province: "Negros Oriental", type: "Municipality" },
+            { username: "Zamboanguita", password: "zamboanguita2024", province: "Negros Oriental", type: "Municipality" },
+            // Siquijor
+            { username: "Siquijor", password: "siquijor2024", province: "Siquijor", type: "Municipality" },
+            { username: "Enrique Villanueva", password: "enriquevillanueva2024", province: "Siquijor", type: "Municipality" },
+            { username: "Larena", password: "larena2024", province: "Siquijor", type: "Municipality" },
+            { username: "Lazi", password: "lazi2024", province: "Siquijor", type: "Municipality" },
+            { username: "Maria", password: "maria2024", province: "Siquijor", type: "Municipality" },
+            { username: "San Juan", password: "sanjuan2024", province: "Siquijor", type: "Municipality" }
+        ];
+
+        function attemptLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (!username || !password) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = '❌ Please enter both LGU name and password';
+                return;
+            }
+            
+            // Find matching account
+            const account = lguAccounts.find(acc => 
+                acc.username.toLowerCase() === username.toLowerCase() && 
+                acc.password === password
+            );
+            
+            if (account) {
+                // Store login session
+                const session = {
+                    username: account.username,
+                    province: account.province,
+                    type: account.type,
+                    loggedIn: true,
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('clup_user_session', JSON.stringify(session));
+                
+                // Redirect to main CLUP page
+                window.location.href = 'StatusCLUP.html';
+            } else {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = '❌ Invalid LGU name or password. Please try again.';
+                document.getElementById('loginPassword').value = '';
+            }
+        }
+        
+        // Enter key support
+        document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                attemptLogin();
+            }
+        });
+        document.getElementById('loginUsername').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                attemptLogin();
+            }
+        });
+        
+        // Check if already logged in
+        const existingSession = localStorage.getItem('clup_user_session');
+        if (existingSession) {
+            try {
+                const session = JSON.parse(existingSession);
+                if (session.loggedIn) {
+                    const loginTime = new Date(session.loginTime);
+                    const hoursDiff = (new Date() - loginTime) / (1000 * 60 * 60);
+                    if (hoursDiff <= 8) {
+                        window.location.href = 'StatusCLUP.html';
+                    } else {
+                        localStorage.removeItem('clup_user_session');
+                    }
+                }
+            } catch(e) {
+                localStorage.removeItem('clup_user_session');
+            }
+        }
+        
+        window.attemptLogin = attemptLogin;
+    </script>
+</body>
+</html>

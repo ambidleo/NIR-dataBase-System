@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DHSUD | CLUP Data Entry System | LGU-Specific View</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Inter", sans-serif;
+            background: #eef2f7;
+            color: #0f2b3a;
+            line-height: 1.45;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(125deg, #0a3b2c 0%, #166953 100%);
+            color: white;
+            padding: 2rem 2.2rem;
+            border-radius: 36px;
+            margin-bottom: 2rem;
+            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .header h1 small {
+            font-size: 0.75rem;
+            background: #2d8a74;
+            padding: 6px 15px;
+            border-radius: 60px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 20px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+        }
+        .user-info span {
+            font-size: 0.85rem;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 0.8rem 2rem;
+            background: white;
+            border: none;
+            border-radius: 48px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #2d4a3e;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .tab-btn.active {
+            background: #166953;
+            color: white;
+            box-shadow: 0 10px 18px -6px rgba(22,105,83,0.4);
+        }
+        .tab-btn:hover:not(.active) {
+            background: #e0ede8;
+            transform: translateY(-1px);
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e4edf0;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            padding: 1.3rem 2rem;
+            border-bottom: 1px solid #e9f0f2;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .card-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            color: #166953;
+            letter-spacing: -0.2px;
+        }
+        .card-body {
+            padding: 2rem 2rem;
+        }
+        
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+        }
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #2c5e4a;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+        .required:after {
+            content: " *";
+            color: #d9534f;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid #e2eef0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-family: "Inter", sans-serif;
+            background-color: #ffffff;
+            transition: 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #166953;
+            box-shadow: 0 0 0 4px rgba(22,105,83,0.15);
+        }
+        .form-control:disabled, .form-control[readonly] {
+            background-color: #f5f7f6;
+            cursor: not-allowed;
+        }
+        
+        /* LGU Select Styling */
+        .lgu-select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid #e2eef0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-family: "Inter", sans-serif;
+            background-color: #f5f7f6;
+            cursor: not-allowed;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            background: #f9fdfb;
+            padding: 0.9rem 1.2rem;
+            border-radius: 24px;
+            margin-top: 0.2rem;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* PHASE TABLE with file attachments */
+        .phase-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .phase-table th, .phase-table td {
+            padding: 1rem 1rem;
+            border: 1px solid #e4edef;
+            vertical-align: middle;
+        }
+        .phase-table th {
+            background: #f2f9f6;
+            font-weight: 800;
+            font-size: 0.8rem;
+            color: #0f5a46;
+        }
+        .phase-status-select {
+            padding: 0.6rem 0.8rem;
+            border-radius: 40px;
+            border: 1.5px solid #cbdad5;
+            background: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 140px;
+        }
+        .mov-text {
+            font-size: 0.7rem;
+            color: #56786a;
+            margin-top: 0.3rem;
+            line-height: 1.3;
+        }
+        .file-upload-area {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .file-input-small {
+            font-size: 0.7rem;
+            padding: 5px;
+            border: 1px dashed #bcd0c8;
+            border-radius: 30px;
+            background: #fefefe;
+            cursor: pointer;
+        }
+        .btn-clear-file {
+            background: none;
+            border: none;
+            color: #b91c1c;
+            font-size: 0.65rem;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.65rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: 0.2s;
+        }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .btn-success { background: #166953; color: white; }
+        .btn-success:hover { background: #0e4f3e; transform: translateY(-2px); box-shadow: 0 8px 16px -8px rgba(22,105,83,0.4); }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-submit { width: 100%; padding: 14px; font-size: 1rem; margin-top: 2rem; font-weight: 700; }
+        
+        /* Records table */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 24px;
+            border: 1px solid #e4edef;
+            background: white;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .data-table th {
+            background: #f0f8f4;
+            padding: 1rem 0.8rem;
+            font-weight: 800;
+            color: #166953;
+        }
+        .data-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eaf1ed;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.9rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .status-updated { background: #dff0e6; color: #0f5a46; }
+        .status-for-updating { background: #fff2dd; color: #b45309; }
+        .status-no { background: #fee9e6; color: #b91c1c; }
+        .action-btn {
+            padding: 0.35rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            margin: 0 2px;
+        }
+        .action-view { background: #d9efff; color: #0369a1; }
+        .action-edit { background: #fff0db; color: #b45309; }
+        .action-delete { background: #ffe2e0; color: #b91c1c; }
+        hr { margin: 1.8rem 0; border: none; border-top: 1px solid #ddece6; }
+        .footer {
+            background: #0f2b3a;
+            color: #cbd5e1;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .lgu-badge {
+            background: #e8f0fe;
+            color: #166953;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .info-note {
+            background: #e8f0fe;
+            border-left: 4px solid #166953;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+            color: #2c5e4a;
+        }
+        @media (max-width: 780px) {
+            .container { padding: 0 16px; }
+            .card-body { padding: 1.2rem; }
+            .phase-table th, .phase-table td { padding: 0.7rem; }
+            .phase-status-select { width: 110px; }
+            .header { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header" id="mainHeader">
+        <h1>
+            📋 CLUP Data Entry System
+            <small>Negros Island Region | LGU-Specific Access</small>
+        </h1>
+        <div id="userInfoContainer"></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('clup')">🏛️ My CLUP Data Entry</button>
+        <button class="tab-btn" onclick="switchTab('records')">📊 My CLUP Records</button>
+    </div>
+
+    <!-- CLUP TAB -->
+    <div id="clupTab" class="tab-content">
+        <div class="card">
+            <div class="card-header"><h2>📝 CLUP Information + Phase-wise File Uploads</h2></div>
+            <div class="card-body">
+                <div class="info-note">
+                    ⚠️ <strong>Note:</strong> You are logged in as <strong id="currentLguDisplay"></strong>. 
+                    You can only manage CLUP data for your own LGU.
+                </div>
+                <form id="clupForm">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label class="required">📍 Province</label>
+                            <input type="text" id="clupProvince" class="form-control" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label class="required">🏙️ LGU Name</label>
+                            <input type="text" id="clupLguName" class="form-control" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>🏛️ LGU Type</label>
+                            <input type="text" id="clupLguType" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="input-group"><label class="required">📌 CLUP Status</label><div class="radio-group"><label class="radio-option"><input type="radio" name="clupStatus" value="Updated"> ✅ Updated (within planning period)</label><label class="radio-option"><input type="radio" name="clupStatus" value="For updating"> 🔄 For updating</label><label class="radio-option"><input type="radio" name="clupStatus" value="No CLUP"> ❌ No CLUP</label></div></div>
+                    <hr>
+                    
+                    <!-- TPAP Phase Table -->
+                    <div class="input-group"><label>⚙️ CLUP Preparation / TPAP Phase Status + Supporting Documents</label>
+                        <table class="phase-table" id="tpapTable">
+                            <thead><tr><th>Phase</th><th>Definition</th><th>Status</th><th>Means of Verification (MOV)</th><th>📎 Upload File (MOV/Evidence)</th></tr></thead>
+                            <tbody id="tpapBody"></tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <div class="input-group"><label class="required">✅ Review and Approval Status (RA Code)</label>
+                        <select id="raStatus" class="form-control" required>
+                            <option value="">-- Select RA Code --</option>
+                            <option>RA 1 – Transmitted</option><option>RA 2 – Under review</option><option>RA 3 – Under revision</option>
+                            <option>RA 4 – Returned for final review</option><option>RA 5 – Endorsed for adoption</option>
+                            <option>RA 6 – Adopted & enacted</option><option>RA 7 – For DHSUD approval</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-submit">💾 Save CLUP Record (with files)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECORDS TAB - Shows ONLY logged-in LGU's records -->
+    <div id="recordsTab" class="tab-content" style="display: none;">
+        <div class="card">
+            <div class="card-header">
+                <h2>📊 My CLUP Records</h2>
+                <button class="btn btn-primary" onclick="loadMyRecords()">🔄 Refresh</button>
+            </div>
+            <div class="card-body">
+                <div class="info-note">
+                    📌 Showing records for: <strong id="recordsLguDisplay"></strong>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>LGU</th><th>Province</th><th>LGU Type</th><th>Status</th><th>RA Code</th><th>TPAP Summary</th><th>Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="recordsTableBody"><tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="footer"><p>DHSUD Region VI — ELUPDD Integrated Database | LGU-Specific Access | TPAP Phase File Attachments</p></footer>
+
+<script>
+// ==================== LOGIN CHECK & SESSION VALIDATION ====================
+(function() {
+    const session = localStorage.getItem('clup_user_session');
+    
+    if (!session) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    try {
+        const userSession = JSON.parse(session);
+        if (!userSession.loggedIn || !userSession.username) {
+            localStorage.removeItem('clup_user_session');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Check session expiry (8 hours)
+        const loginTime = new Date(userSession.loginTime);
+        const now = new Date();
+        const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+        if (hoursDiff > 8) {
+            localStorage.removeItem('clup_user_session');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        window.currentUser = userSession;
+    } catch (e) {
+        localStorage.removeItem('clup_user_session');
+        window.location.href = 'login.html';
+        return;
+    }
+})();
+
+// Logout function
+function logout() {
+    localStorage.removeItem('clup_user_session');
+    window.location.href = 'login.html';
+}
+
+// ==================== MAIN APPLICATION ====================
+
+// MASTER LGU DATABASE (Grouped by Province)
+const masterLguList = [
+    { name: "Bacolod City", province: "Negros Occidental", type: "City" },
+    { name: "Bago City", province: "Negros Occidental", type: "City" },
+    { name: "Cadiz City", province: "Negros Occidental", type: "City" },
+    { name: "Escalante City", province: "Negros Occidental", type: "City" },
+    { name: "Himamaylan City", province: "Negros Occidental", type: "City" },
+    { name: "Kabankalan City", province: "Negros Occidental", type: "City" },
+    { name: "La Carlota City", province: "Negros Occidental", type: "City" },
+    { name: "Sagay City", province: "Negros Occidental", type: "City" },
+    { name: "San Carlos City", province: "Negros Occidental", type: "City" },
+    { name: "Silay City", province: "Negros Occidental", type: "City" },
+    { name: "Sipalay City", province: "Negros Occidental", type: "City" },
+    { name: "Talisay City", province: "Negros Occidental", type: "City" },
+    { name: "Victorias City", province: "Negros Occidental", type: "City" },
+    { name: "Binalbagan", province: "Negros Occidental", type: "Municipality" },
+    { name: "Calatrava", province: "Negros Occidental", type: "Municipality" },
+    { name: "Candoni", province: "Negros Occidental", type: "Municipality" },
+    { name: "Cauayan", province: "Negros Occidental", type: "Municipality" },
+    { name: "Enrique B. Magalona", province: "Negros Occidental", type: "Municipality" },
+    { name: "Hinigaran", province: "Negros Occidental", type: "Municipality" },
+    { name: "Hinoba-an", province: "Negros Occidental", type: "Municipality" },
+    { name: "Ilog", province: "Negros Occidental", type: "Municipality" },
+    { name: "Isabela", province: "Negros Occidental", type: "Municipality" },
+    { name: "La Castellana", province: "Negros Occidental", type: "Municipality" },
+    { name: "Manapla", province: "Negros Occidental", type: "Municipality" },
+    { name: "Moises Padilla", province: "Negros Occidental", type: "Municipality" },
+    { name: "Murcia", province: "Negros Occidental", type: "Municipality" },
+    { name: "Pontevedra", province: "Negros Occidental", type: "Municipality" },
+    { name: "Pulupandan", province: "Negros Occidental", type: "Municipality" },
+    { name: "Salvador Benedicto", province: "Negros Occidental", type: "Municipality" },
+    { name: "San Enrique", province: "Negros Occidental", type: "Municipality" },
+    { name: "Toboso", province: "Negros Occidental", type: "Municipality" },
+    { name: "Valladolid", province: "Negros Occidental", type: "Municipality" },
+    { name: "Dumaguete City", province: "Negros Oriental", type: "City" },
+    { name: "Bais City", province: "Negros Oriental", type: "City" },
+    { name: "Bayawan City", province: "Negros Oriental", type: "City" },
+    { name: "Canlaon City", province: "Negros Oriental", type: "City" },
+    { name: "Guihulngan City", province: "Negros Oriental", type: "City" },
+    { name: "Tanjay City", province: "Negros Oriental", type: "City" },
+    { name: "Amlan", province: "Negros Oriental", type: "Municipality" },
+    { name: "Ayungon", province: "Negros Oriental", type: "Municipality" },
+    { name: "Bacong", province: "Negros Oriental", type: "Municipality" },
+    { name: "Basay", province: "Negros Oriental", type: "Municipality" },
+    { name: "Bindoy", province: "Negros Oriental", type: "Municipality" },
+    { name: "Dauin", province: "Negros Oriental", type: "Municipality" },
+    { name: "Jimalalud", province: "Negros Oriental", type: "Municipality" },
+    { name: "La Libertad", province: "Negros Oriental", type: "Municipality" },
+    { name: "Mabinay", province: "Negros Oriental", type: "Municipality" },
+    { name: "Manjuyod", province: "Negros Oriental", type: "Municipality" },
+    { name: "Pamplona", province: "Negros Oriental", type: "Municipality" },
+    { name: "San Jose", province: "Negros Oriental", type: "Municipality" },
+    { name: "Santa Catalina", province: "Negros Oriental", type: "Municipality" },
+    { name: "Siaton", province: "Negros Oriental", type: "Municipality" },
+    { name: "Sibulan", province: "Negros Oriental", type: "Municipality" },
+    { name: "Tayasan", province: "Negros Oriental", type: "Municipality" },
+    { name: "Valencia", province: "Negros Oriental", type: "Municipality" },
+    { name: "Vallehermoso", province: "Negros Oriental", type: "Municipality" },
+    { name: "Zamboanguita", province: "Negros Oriental", type: "Municipality" },
+    { name: "Siquijor", province: "Siquijor", type: "Municipality" },
+    { name: "Enrique Villanueva", province: "Siquijor", type: "Municipality" },
+    { name: "Larena", province: "Siquijor", type: "Municipality" },
+    { name: "Lazi", province: "Siquijor", type: "Municipality" },
+    { name: "Maria", province: "Siquijor", type: "Municipality" },
+    { name: "San Juan", province: "Siquijor", type: "Municipality" }
+];
+
+// TPAP Phases data
+const tpapPhases = [
+    { name: "Preparatory phase (Pre-phase)", def: "LGU created MOA and TWG, and conducted TNA.", mov: "MOA, TNA, Resolution on Creation of TWG" },
+    { name: "Phase 1", def: "LGU conducted data generation and analysis using PRA.", mov: "Ecosystem Analysis, CLUP Excel Matrices" },
+    { name: "Phase 2", def: "LGU conducted situational analysis linking CCA/DRR.", mov: "CDRA Report, Sectoral Studies" },
+    { name: "Phase 3", def: "LGU prepared vision, goals, development thrusts.", mov: "Vision/Goals, Structure Plan" },
+    { name: "Phase 4", def: "LGU prepared Land Use Plan.", mov: "Draft CLUP, Land Use Maps" },
+    { name: "Phase 5", def: "Competencies in zoning ordinance, M&E.", mov: "Draft Zoning Ordinance, Public Hearing Docs" }
+];
+
+let clupRecords = JSON.parse(localStorage.getItem('clup_records') || '[]');
+let currentEditId = null;
+
+// Get current user's LGU info
+const currentLGU = window.currentUser ? {
+    name: window.currentUser.username,
+    province: window.currentUser.province,
+    type: window.currentUser.type
+} : null;
+
+// Display user info
+function displayUserInfo() {
+    if (window.currentUser) {
+        const container = document.getElementById('userInfoContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="user-info">
+                    <span>👤 ${escapeHtml(window.currentUser.username)}</span>
+                    <span>📍 ${escapeHtml(window.currentUser.province)}</span>
+                    <span>🏛️ ${escapeHtml(window.currentUser.type)}</span>
+                    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+                </div>
+            `;
+        }
+        
+        // Update displays
+        document.getElementById('currentLguDisplay').innerText = window.currentUser.username;
+        document.getElementById('recordsLguDisplay').innerText = window.currentUser.username;
+        
+        // Set readonly form fields with current user's info
+        document.getElementById('clupProvince').value = currentLGU.province;
+        document.getElementById('clupLguName').value = currentLGU.name;
+        document.getElementById('clupLguType').value = currentLGU.type;
+    }
+}
+
+// File handling
+function storeFileAsBase64(file) {
+    return new Promise((resolve) => {
+        if (!file) { resolve(null); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ name: file.name, data: e.target.result, type: file.type });
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+    });
+}
+
+// Build TPAP Table
+function buildTpapTableWithFiles() {
+    const tbody = document.getElementById('tpapBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    tpapPhases.forEach((phase, idx) => {
+        const row = tbody.insertRow();
+        row.insertCell(0).innerHTML = `<strong>${escapeHtml(phase.name)}</strong>`;
+        row.insertCell(1).innerHTML = `<span style="font-size:0.75rem;">${escapeHtml(phase.def)}</span>`;
+        row.insertCell(2).innerHTML = `<select class="phase-status-select" data-phase-index="${idx}"><option value="Not Started">⭕ Not Started</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>`;
+        row.insertCell(3).innerHTML = `<div class="mov-text">📎 ${escapeHtml(phase.mov)}</div>`;
+        row.insertCell(4).innerHTML = `<div class="file-upload-area" id="file-area-${idx}">
+            <input type="file" class="file-input-small" data-phase-idx="${idx}" accept=".pdf,.doc,.docx,.jpg,.png">
+            <div id="filePreview-${idx}" class="mov-text" style="margin-top:4px;"></div>
+        </div>`;
+    });
+    
+    document.querySelectorAll('.file-input-small').forEach(input => {
+        input.addEventListener('change', async (e) => {
+            const idx = input.getAttribute('data-phase-idx');
+            const file = e.target.files[0];
+            if (file && idx !== null) {
+                const previewDiv = document.getElementById(`filePreview-${idx}`);
+                if (previewDiv) previewDiv.innerHTML = `📄 ${escapeHtml(file.name)} <button type="button" class="btn-clear-file" data-clear-idx="${idx}">✖ clear</button>`;
+                const clearBtn = previewDiv?.querySelector('.btn-clear-file');
+                if (clearBtn) clearBtn.onclick = () => { input.value = ''; if(previewDiv) previewDiv.innerHTML = ''; };
+            }
+        });
+    });
+}
+
+async function getFinalPhaseAttachments(existingRecordPhases = null) {
+    const final = [];
+    for (let i = 0; i < tpapPhases.length; i++) {
+        const select = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
+        const status = select ? select.value : 'Not Started';
+        const fileInput = document.querySelector(`.file-input-small[data-phase-idx="${i}"]`);
+        let fileAttachment = null;
+        if (fileInput && fileInput.files.length > 0) {
+            fileAttachment = await storeFileAsBase64(fileInput.files[0]);
+        } else if (fileInput && fileInput.getAttribute('data-existing-file')) {
+            fileAttachment = JSON.parse(fileInput.getAttribute('data-existing-file'));
+        } else if (existingRecordPhases && existingRecordPhases[i] && existingRecordPhases[i].fileAttachment) {
+            fileAttachment = existingRecordPhases[i].fileAttachment;
+        }
+        final.push({ phaseName: tpapPhases[i].name, status, fileAttachment, movDesc: tpapPhases[i].mov });
+    }
+    return final;
+}
+
+function getSelectedRadio(name) { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; }
+function setSelectedRadio(name, val) { document.querySelectorAll(`input[name="${name}"]`).forEach(r => { if(r.value === val) r.checked = true; }); }
+
+async function saveClupRecord(event) {
+    event.preventDefault();
+    
+    // Use current user's info - cannot change
+    const province = currentLGU.province;
+    const lguName = currentLGU.name;
+    const lguType = currentLGU.type;
+    const clupStatus = getSelectedRadio('clupStatus');
+    const raStatus = document.getElementById('raStatus').value;
+    
+    if (!clupStatus || !raStatus) { 
+        alert('Please fill all required fields (CLUP Status and RA Code)'); 
+        return; 
+    }
+    
+    // Check if record already exists for this LGU
+    const existingRecord = clupRecords.find(r => r.lguName === lguName && r.province === province);
+    if (existingRecord && !currentEditId) {
+        if (!confirm(`A CLUP record already exists for ${lguName}. Do you want to update it?`)) {
+            return;
+        }
+        currentEditId = existingRecord.id;
+    }
+    
+    const phaseAttachments = await getFinalPhaseAttachments(null);
+    const statusMap = {};
+    phaseAttachments.forEach(p => { statusMap[p.phaseName] = p.status; });
+    
+    const record = {
+        id: currentEditId || Date.now(),
+        type: 'CLUP',
+        lguName, province, lguType,
+        clupStatus, raStatus,
+        tpapStatus: statusMap,
+        phaseAttachments: phaseAttachments.map(p => ({ phaseName: p.phaseName, fileAttachment: p.fileAttachment, status: p.status })),
+        timestamp: new Date().toISOString()
+    };
+    
+    if (currentEditId) {
+        const idx = clupRecords.findIndex(r => r.id === currentEditId);
+        if (idx !== -1) clupRecords[idx] = record;
+        else clupRecords.push(record);
+    } else {
+        clupRecords.push(record);
+    }
+    
+    localStorage.setItem('clup_records', JSON.stringify(clupRecords));
+    resetClupForm();
+    loadMyRecords();
+    showToast(`✓ CLUP saved: ${lguName}`);
+    switchTab('records');
+}
+
+function resetClupForm() {
+    // Clear form but keep user's LGU info
+    document.getElementById('clupForm').reset();
+    document.querySelectorAll('input[name="clupStatus"]').forEach(r => r.checked = false);
+    document.getElementById('raStatus').selectedIndex = 0;
+    
+    // Keep the user's LGU info
+    document.getElementById('clupProvince').value = currentLGU.province;
+    document.getElementById('clupLguName').value = currentLGU.name;
+    document.getElementById('clupLguType').value = currentLGU.type;
+    
+    for (let i=0; i<tpapPhases.length; i++) {
+        const inp = document.querySelector(`.file-input-small[data-phase-idx="${i}"]`);
+        if (inp) { inp.value = ''; inp.removeAttribute('data-existing-file'); }
+        const preview = document.getElementById(`filePreview-${i}`);
+        if (preview) preview.innerHTML = '';
+        const sel = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
+        if (sel) sel.value = 'Not Started';
+    }
+    currentEditId = null;
+}
+
+function editMyClupRecord(id) {
+    const rec = clupRecords.find(r => r.id === id);
+    if (!rec) return;
+    
+    // Verify this record belongs to the logged-in user
+    if (rec.lguName !== currentLGU.name || rec.province !== currentLGU.province) {
+        alert("You cannot edit records from other LGUs.");
+        return;
+    }
+    
+    currentEditId = id;
+    setSelectedRadio('clupStatus', rec.clupStatus);
+    document.getElementById('raStatus').value = rec.raStatus;
+    
+    for (let i=0; i<tpapPhases.length; i++) {
+        const sel = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
+        if (sel && rec.tpapStatus && rec.tpapStatus[tpapPhases[i].name]) sel.value = rec.tpapStatus[tpapPhases[i].name];
+        const previewDiv = document.getElementById(`filePreview-${i}`);
+        const attached = rec.phaseAttachments?.find(p => p.phaseName === tpapPhases[i].name);
+        if (attached && attached.fileAttachment && attached.fileAttachment.data) {
+            previewDiv.innerHTML = `📄 ${escapeHtml(attached.fileAttachment.name)} <button type="button" class="btn-clear-file" data-clear-idx="${i}">✖ clear</button>`;
+            const fileInput = document.querySelector(`.file-input-small[data-phase-idx="${i}"]`);
+            if (fileInput) fileInput.setAttribute('data-existing-file', JSON.stringify(attached.fileAttachment));
+            const clearBtn = previewDiv.querySelector('.btn-clear-file');
+            if (clearBtn) clearBtn.onclick = () => { if(fileInput) { fileInput.value = ''; fileInput.removeAttribute('data-existing-file'); } previewDiv.innerHTML = ''; };
+        } else { if(previewDiv) previewDiv.innerHTML = ''; }
+    }
+    switchTab('clup');
+    showToast(`Editing CLUP for: ${rec.lguName}`);
+}
+
+function deleteMyRecord(id, name) { 
+    const rec = clupRecords.find(r => r.id === id);
+    if (rec && (rec.lguName !== currentLGU.name || rec.province !== currentLGU.province)) {
+        alert("You cannot delete records from other LGUs.");
+        return;
+    }
+    
+    if(confirm(`Delete CLUP record for ${name}?`)){ 
+        clupRecords = clupRecords.filter(r => r.id !== id); 
+        localStorage.setItem('clup_records', JSON.stringify(clupRecords)); 
+        loadMyRecords(); 
+        showToast(`Deleted ${name}`); 
+    } 
+}
+
+function formatTpapSummary(record) { 
+    if(!record.tpapStatus) return '—'; 
+    return Object.entries(record.tpapStatus).map(([p,s])=>(s==='Completed'?'✅':s==='Ongoing'?'🔄':'⭕') + p.slice(0,12)).join(' · ').substring(0,80); 
+}
+
+function viewMyRecord(rec) { 
+    if (rec.lguName !== currentLGU.name || rec.province !== currentLGU.province) {
+        alert("You cannot view records from other LGUs.");
+        return;
+    }
+    let msg = `CLUP Record\nLGU: ${rec.lguName}\nProvince: ${rec.province}\nType: ${rec.lguType}\nStatus: ${rec.clupStatus}\nRA Code: ${rec.raStatus}\nFiles attached: ${rec.phaseAttachments?.filter(f => f.fileAttachment).length || 0} files`; 
+    alert(msg); 
+}
+
+// Load ONLY the logged-in LGU's records
+function loadMyRecords() {
+    // Filter records for the current LGU only
+    const myRecords = clupRecords.filter(r => 
+        r.lguName === currentLGU.name && 
+        r.province === currentLGU.province
+    );
+    const sortedRecords = [...myRecords].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const tbody = document.getElementById('recordsTableBody');
+    
+    if(sortedRecords.length === 0){ 
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No CLUP records found for your LGU. Create your first record in the Data Entry tab.</td></tr>'; 
+        return; 
+    }
+    
+    tbody.innerHTML = '';
+    sortedRecords.forEach(r => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td><strong>${escapeHtml(r.lguName)}</strong></td>
+            <td>${escapeHtml(r.province)}</td>
+            <td>${escapeHtml(r.lguType)}</td>
+            <td><span class="status-badge ${r.clupStatus === 'Updated' ? 'status-updated' : (r.clupStatus === 'For updating' ? 'status-for-updating' : 'status-no')}">${escapeHtml(r.clupStatus)}</span></td>
+            <td style="font-size:0.7rem;">${escapeHtml(r.raStatus)}</td>
+            <td style="font-size:0.7rem;">${formatTpapSummary(r)}</td>
+            <td>${new Date(r.timestamp).toLocaleDateString()}</td>
+            <td>
+                <button class="action-btn action-view" onclick='viewMyRecord(${JSON.stringify(r).replace(/'/g, "&#39;")})'>👁️</button>
+                <button class="action-btn action-edit" onclick="editMyClupRecord(${r.id})">✏️</button>
+                <button class="action-btn action-delete" onclick="deleteMyRecord(${r.id},'${escapeHtml(r.lguName).replace(/'/g,"\\'")}')">🗑️</button>
+            </td>
+        `;
+    });
+}
+
+function showToast(msg) { 
+    const t = document.createElement('div'); 
+    t.innerText = msg; 
+    t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#166953;color:white;padding:12px 24px;border-radius:40px;z-index:9999;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.2);'; 
+    document.body.appendChild(t); 
+    setTimeout(() => t.remove(), 2800);
+}
+
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+function switchTab(tab){ 
+    document.getElementById('clupTab').style.display = tab === 'clup' ? 'block' : 'none'; 
+    document.getElementById('recordsTab').style.display = tab === 'records' ? 'block' : 'none'; 
+    const btns = document.querySelectorAll('.tab-btn');
+    btns[0].classList.toggle('active', tab === 'clup');
+    btns[1].classList.toggle('active', tab === 'records');
+    if(tab === 'records') loadMyRecords(); 
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in
+    if (!currentLGU) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Display user info
+    displayUserInfo();
+    
+    // Build TPAP table
+    buildTpapTableWithFiles();
+    
+    // Set up event listeners
+    document.getElementById('clupForm').addEventListener('submit', saveClupRecord);
+    
+    // Load only this LGU's records
+    loadMyRecords();
+    
+    // Make functions global for onclick handlers
+    window.editMyClupRecord = editMyClupRecord;
+    window.deleteMyRecord = deleteMyRecord;
+    window.viewMyRecord = viewMyRecord;
+    window.switchTab = switchTab;
+    window.loadMyRecords = loadMyRecords;
+    window.logout = logout;
+});
+
+window.logout = logout;
+</script>
+</body>
+</html>
