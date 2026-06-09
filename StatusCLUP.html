@@ -514,7 +514,9 @@ function logout() {
 // ==================== GOOGLE SHEETS FUNCTIONS ====================
 async function sendToGoogleSheets(recordData) {
     try {
-        // Use POST with proper CORS mode
+        console.log('Sending to Google Sheets:', recordData);
+        
+        // Use Google Apps Script URL as a proxy
         const response = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
             method: 'POST',
             mode: 'cors',
@@ -527,16 +529,18 @@ async function sendToGoogleSheets(recordData) {
         if (response.ok) {
             const result = await response.json();
             console.log('Google Sheets response:', result);
-            updateSyncStatus('success', 'Last sync: ' + new Date().toLocaleTimeString());
-            return true;
+            if (result.success) {
+                updateSyncStatus('success', 'Last sync: ' + new Date().toLocaleTimeString());
+                return true;
+            } else {
+                throw new Error(result.message);
+            }
         } else {
-            console.error('HTTP Error:', response.status);
-            updateSyncStatus('error', 'Sync failed: HTTP ' + response.status);
-            return false;
+            throw new Error('HTTP error: ' + response.status);
         }
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
-        updateSyncStatus('error', 'Sync failed: ' + error.message);
+        updateSyncStatus('error', 'Sync failed');
         return false;
     }
 }
