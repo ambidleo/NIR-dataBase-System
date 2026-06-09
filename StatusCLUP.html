@@ -23,7 +23,6 @@
             padding: 0 28px;
         }
         
-        /* Header */
         .header {
             background: linear-gradient(125deg, #0a3b2c 0%, #166953 100%);
             color: white;
@@ -51,7 +50,6 @@
             padding: 6px 15px;
             border-radius: 60px;
             font-weight: 500;
-            letter-spacing: 0.3px;
         }
         .user-info {
             display: flex;
@@ -80,7 +78,6 @@
             transform: translateY(-1px);
         }
         
-        /* Tabs */
         .tabs {
             display: flex;
             gap: 0.8rem;
@@ -109,7 +106,6 @@
             transform: translateY(-1px);
         }
         
-        /* Cards */
         .card {
             background: white;
             border-radius: 32px;
@@ -138,7 +134,6 @@
             padding: 2rem 2rem;
         }
         
-        /* Form Grid */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
@@ -200,7 +195,6 @@
             font-weight: 500;
         }
         
-        /* PHASE TABLE with file attachments and remarks */
         .phase-table {
             width: 100%;
             border-collapse: collapse;
@@ -273,7 +267,6 @@
             box-shadow: 0 0 0 3px rgba(22,105,83,0.1);
         }
         
-        /* Buttons */
         .btn {
             padding: 0.65rem 1.5rem;
             border-radius: 40px;
@@ -289,11 +282,11 @@
         .btn-primary { background: #2563eb; color: white; }
         .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); }
         .btn-success { background: #166953; color: white; }
-        .btn-success:hover { background: #0e4f3e; transform: translateY(-2px); box-shadow: 0 8px 16px -8px rgba(22,105,83,0.4); }
-        .btn-danger { background: #dc2626; color: white; }
+        .btn-success:hover { background: #0e4f3e; transform: translateY(-2px); }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; transform: translateY(-2px); }
         .btn-submit { width: 100%; padding: 14px; font-size: 1rem; margin-top: 2rem; font-weight: 700; }
         
-        /* Records table */
         .table-wrapper {
             overflow-x: auto;
             border-radius: 24px;
@@ -337,6 +330,7 @@
         .action-view { background: #d9efff; color: #0369a1; }
         .action-edit { background: #fff0db; color: #b45309; }
         .action-delete { background: #ffe2e0; color: #b91c1c; }
+        .action-sync { background: #dcfce7; color: #166953; }
         hr { margin: 1.8rem 0; border: none; border-top: 1px solid #ddece6; }
         .footer {
             background: #0f2b3a;
@@ -355,6 +349,16 @@
             font-size: 0.8rem;
             color: #2c5e4a;
         }
+        .sync-status {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .sync-success { background: #dcfce7; color: #166953; }
+        .sync-pending { background: #fed7aa; color: #9a3412; }
+        .sync-error { background: #fee2e2; color: #b91c1c; }
+        
         @media (max-width: 780px) {
             .container { padding: 0 16px; }
             .card-body { padding: 1.2rem; }
@@ -388,7 +392,7 @@
             <div class="card-body">
                 <div class="info-note">
                     ⚠️ <strong>Note:</strong> You are logged in as <strong id="currentLguDisplay"></strong>. 
-                    You can only manage CLUP data for your own LGU. Use the "Remarks" column to add notes for each phase.
+                    Data will be automatically synced to Google Sheets when saved.
                 </div>
                 <form id="clupForm">
                     <div class="form-grid">
@@ -409,18 +413,10 @@
                     <div class="input-group"><label class="required">📌 CLUP Status</label><div class="radio-group"><label class="radio-option"><input type="radio" name="clupStatus" value="Updated"> ✅ Updated (within planning period)</label><label class="radio-option"><input type="radio" name="clupStatus" value="For updating"> 🔄 For updating</label><label class="radio-option"><input type="radio" name="clupStatus" value="No CLUP"> ❌ No CLUP</label></div></div>
                     <hr>
                     
-                    <!-- TPAP Phase Table with Remarks Column -->
                     <div class="input-group"><label>⚙️ CLUP Preparation / TPAP Phase Status + Remarks + Supporting Documents</label>
                         <table class="phase-table" id="tpapTable">
                             <thead>
-                                <tr>
-                                    <th>Phase</th>
-                                    <th>Definition</th>
-                                    <th>Status</th>
-                                    <th>📝 Remarks</th>
-                                    <th>Means of Verification (MOV)</th>
-                                    <th>📎 Upload File (MOV/Evidence)</th>
-                                </tr>
+                                <tr><th>Phase</th><th>Definition</th><th>Status</th><th>📝 Remarks</th><th>Means of Verification (MOV)</th><th>📎 Upload File</th></tr>
                             </thead>
                             <tbody id="tpapBody"></tbody>
                         </table>
@@ -434,7 +430,7 @@
                             <option>RA 6 – Adopted & enacted</option><option>RA 7 – For DHSUD approval</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-success btn-submit">💾 Save CLUP Record (with files & remarks)</button>
+                    <button type="submit" class="btn btn-success btn-submit">💾 Save & Sync to Google Sheets</button>
                 </form>
             </div>
         </div>
@@ -445,27 +441,36 @@
         <div class="card">
             <div class="card-header">
                 <h2>📊 My CLUP Records</h2>
-                <button class="btn btn-primary" onclick="loadMyRecords()">🔄 Refresh</button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="loadMyRecords()">🔄 Refresh</button>
+                    <button class="btn btn-success" onclick="syncAllToGoogleSheets()">📤 Sync All to Sheets</button>
+                    <button class="btn btn-warning" onclick="exportToCSV()">📥 Export CSV</button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="info-note">
                     📌 Showing records for: <strong id="recordsLguDisplay"></strong>
+                    <span id="syncIndicator" class="sync-status sync-pending" style="margin-left: 15px;">⏳ Sync Ready</span>
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table">
                         <thead>
                             <tr><th>LGU</th><th>Province</th><th>LGU Type</th><th>Status</th><th>RA Code</th><th>TPAP Summary</th><th>Date</th><th>Actions</th></tr>
                         </thead>
-                        <tbody id="recordsTableBody"><tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
+                        <tbody id="recordsTableBody"><tr><td colspan="8" style="text-align:center;">Loading......</td></tr>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<footer class="footer"><p>DHSUD Region VI — ELUPDD Integrated Database | LGU-Specific Access | TPAP Phase File Attachments & Remarks</p></footer>
+<footer class="footer"><p>DHSUD Region VI — ELUPDD Integrated Database | Synced with Google Sheets</p></footer>
 
 <script>
+// ==================== GOOGLE SHEETS CONFIGURATION ====================
+// REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+const GOOGLE_SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw6LwfK1SRolOCByUyWXvzbkQYAkTBymSyjZx_omuHWSjzmP_yxS3nlvdqyHhsrr4CV/exec';
+
 // ==================== LOGIN CHECK & SESSION VALIDATION ====================
 (function() {
     const session = localStorage.getItem('clup_user_session');
@@ -500,20 +505,138 @@
     }
 })();
 
-// Logout function - redirects to index.html
 function logout() {
     localStorage.removeItem('clup_user_session');
     window.location.href = 'index.html';
 }
 
+// ==================== GOOGLE SHEETS FUNCTIONS ====================
+async function sendToGoogleSheets(recordData) {
+    try {
+        const response = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(recordData)
+        });
+        
+        console.log('Data sent to Google Sheets:', recordData.lguName, recordData.id);
+        updateSyncStatus('success', 'Last sync: ' + new Date().toLocaleTimeString());
+        return true;
+    } catch (error) {
+        console.error('Error sending to Google Sheets:', error);
+        updateSyncStatus('error', 'Sync failed');
+        return false;
+    }
+}
+
+function updateSyncStatus(status, message) {
+    const indicator = document.getElementById('syncIndicator');
+    if (indicator) {
+        indicator.className = `sync-status sync-${status}`;
+        indicator.title = message;
+    }
+}
+
+async function syncAllToGoogleSheets() {
+    const myRecords = clupRecords.filter(r => 
+        r.lguName === currentLGU.name && 
+        r.province === currentLGU.province
+    );
+    
+    if (myRecords.length === 0) {
+        showToast('No records to sync');
+        return;
+    }
+    
+    showToast(`Syncing ${myRecords.length} records to Google Sheets...`);
+    updateSyncStatus('pending', 'Syncing...');
+    
+    let successCount = 0;
+    for (const record of myRecords) {
+        const success = await sendToGoogleSheets({
+            id: record.id,
+            lguName: record.lguName,
+            province: record.province,
+            lguType: record.lguType,
+            clupStatus: record.clupStatus,
+            raStatus: record.raStatus,
+            tpapStatus: record.tpapStatus,
+            tpapRemarks: record.tpapRemarks,
+            phaseAttachments: record.phaseAttachments || [],
+            timestamp: record.timestamp
+        });
+        if (success) successCount++;
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    showToast(`✓ Synced ${successCount} of ${myRecords.length} records to Google Sheets`);
+    if (successCount === myRecords.length) {
+        updateSyncStatus('success', 'All records synced');
+    }
+}
+
+function exportToCSV() {
+    const myRecords = clupRecords.filter(r => 
+        r.lguName === currentLGU.name && 
+        r.province === currentLGU.province
+    );
+    
+    if (myRecords.length === 0) {
+        showToast('No records to export');
+        return;
+    }
+    
+    const headers = ['Record ID', 'Timestamp', 'LGU Name', 'Province', 'LGU Type', 'CLUP Status', 'RA Code',
+        'Preparatory Phase Status', 'Preparatory Phase Remarks',
+        'Phase 1 Status', 'Phase 1 Remarks',
+        'Phase 2 Status', 'Phase 2 Remarks',
+        'Phase 3 Status', 'Phase 3 Remarks',
+        'Phase 4 Status', 'Phase 4 Remarks',
+        'Phase 5 Status', 'Phase 5 Remarks'];
+    
+    const rows = myRecords.map(r => [
+        r.id, r.timestamp, r.lguName, r.province, r.lguType, r.clupStatus, r.raStatus,
+        r.tpapStatus?.['Preparatory phase (Pre-phase)'] || 'Not Started',
+        r.tpapRemarks?.['Preparatory phase (Pre-phase)'] || '',
+        r.tpapStatus?.['Phase 1'] || 'Not Started',
+        r.tpapRemarks?.['Phase 1'] || '',
+        r.tpapStatus?.['Phase 2'] || 'Not Started',
+        r.tpapRemarks?.['Phase 2'] || '',
+        r.tpapStatus?.['Phase 3'] || 'Not Started',
+        r.tpapRemarks?.['Phase 3'] || '',
+        r.tpapStatus?.['Phase 4'] || 'Not Started',
+        r.tpapRemarks?.['Phase 4'] || '',
+        r.tpapStatus?.['Phase 5'] || 'Not Started',
+        r.tpapRemarks?.['Phase 5'] || ''
+    ]);
+    
+    const csvContent = [headers, ...rows].map(row => 
+        row.map(cell => {
+            const cellStr = String(cell);
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+        }).join(',')
+    ).join('\n');
+    
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', `clup_export_${currentLGU.name}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showToast(`✓ Exported ${myRecords.length} records to CSV`);
+}
+
 // ==================== MAIN APPLICATION ====================
-
-const masterLguList = [
-    { name: "Bacolod City", province: "Negros Occidental", type: "City" },
-    { name: "Dumaguete City", province: "Negros Oriental", type: "City" },
-    { name: "Siquijor", province: "Siquijor", type: "Municipality" }
-];
-
 const tpapPhases = [
     { name: "Preparatory phase (Pre-phase)", def: "LGU created MOA and TWG, and conducted TNA.", mov: "MOA, TNA, Resolution on Creation of TWG" },
     { name: "Phase 1", def: "LGU conducted data generation and analysis using PRA.", mov: "Ecosystem Analysis, CLUP Excel Matrices" },
@@ -574,7 +697,7 @@ function buildTpapTableWithFiles() {
         row.insertCell(0).innerHTML = `<strong>${escapeHtml(phase.name)}</strong>`;
         row.insertCell(1).innerHTML = `<span style="font-size:0.75rem;">${escapeHtml(phase.def)}</span>`;
         row.insertCell(2).innerHTML = `<select class="phase-status-select" data-phase-index="${idx}"><option value="Not Started">⭕ Not Started</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>`;
-        row.insertCell(3).innerHTML = `<input type="text" class="remark-input" data-remark-idx="${idx}" placeholder="Optional remarks for this phase...">`;
+        row.insertCell(3).innerHTML = `<input type="text" class="remark-input" data-remark-idx="${idx}" placeholder="Optional remarks...">`;
         row.insertCell(4).innerHTML = `<div class="mov-text">📎 ${escapeHtml(phase.mov)}</div>`;
         row.insertCell(5).innerHTML = `<div class="file-upload-area" id="file-area-${idx}">
             <input type="file" class="file-input-small" data-phase-idx="${idx}" accept=".pdf,.doc,.docx,.jpg,.png">
@@ -657,7 +780,7 @@ async function saveClupRecord(event) {
         clupStatus, raStatus,
         tpapStatus: statusMap,
         tpapRemarks: remarksMap,
-        phaseAttachments: phaseAttachments.map(p => ({ phaseName: p.phaseName, fileAttachment: p.fileAttachment, status: p.status, remark: p.remark })),
+        phaseAttachments: phaseAttachments,
         timestamp: new Date().toISOString()
     };
     
@@ -670,9 +793,25 @@ async function saveClupRecord(event) {
     }
     
     localStorage.setItem('clup_records', JSON.stringify(clupRecords));
+    
+    // Send to Google Sheets
+    showToast('Saving and syncing to Google Sheets...');
+    await sendToGoogleSheets({
+        id: record.id,
+        lguName: record.lguName,
+        province: record.province,
+        lguType: record.lguType,
+        clupStatus: record.clupStatus,
+        raStatus: record.raStatus,
+        tpapStatus: record.tpapStatus,
+        tpapRemarks: record.tpapRemarks,
+        phaseAttachments: record.phaseAttachments,
+        timestamp: record.timestamp
+    });
+    
     resetClupForm();
     loadMyRecords();
-    showToast(`✓ CLUP saved: ${lguName}`);
+    showToast(`✓ CLUP saved and synced: ${lguName}`);
     switchTab('records');
 }
 
@@ -757,7 +896,7 @@ function viewMyRecord(rec) {
         alert("You cannot view records from other LGUs.");
         return;
     }
-    let msg = `CLUP Record\nLGU: ${rec.lguName}\nProvince: ${rec.province}\nType: ${rec.lguType}\nStatus: ${rec.clupStatus}\nRA Code: ${rec.raStatus}\nFiles attached: ${rec.phaseAttachments?.filter(f => f.fileAttachment).length || 0} files\n\nRemarks by phase:\n`;
+    let msg = `CLUP Record\nLGU: ${rec.lguName}\nProvince: ${rec.province}\nType: ${rec.lguType}\nStatus: ${rec.clupStatus}\nRA Code: ${rec.raStatus}\n\nRemarks by phase:\n`;
     if (rec.tpapRemarks) {
         for (const [phase, remark] of Object.entries(rec.tpapRemarks)) {
             if (remark) msg += `📌 ${phase}: ${remark}\n`;
@@ -775,7 +914,7 @@ function loadMyRecords() {
     const tbody = document.getElementById('recordsTableBody');
     
     if(sortedRecords.length === 0){ 
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No CLUP records found for your LGU. Create your first record in the Data Entry tab.</td></tr>'; 
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No CLUP records found. Create your first record in the Data Entry tab.</td></tr>'; 
         return; 
     }
     
@@ -794,6 +933,7 @@ function loadMyRecords() {
                 <button class="action-btn action-view" onclick='viewMyRecord(${JSON.stringify(r).replace(/'/g, "&#39;")})'>👁️</button>
                 <button class="action-btn action-edit" onclick="editMyClupRecord(${r.id})">✏️</button>
                 <button class="action-btn action-delete" onclick="deleteMyRecord(${r.id},'${escapeHtml(r.lguName).replace(/'/g,"\\'")}')">🗑️</button>
+                <button class="action-btn action-sync" onclick="sendToGoogleSheets({id:${r.id}, lguName:'${escapeHtml(r.lguName)}', province:'${escapeHtml(r.province)}', lguType:'${escapeHtml(r.lguType)}', clupStatus:'${escapeHtml(r.clupStatus)}', raStatus:'${escapeHtml(r.raStatus)}', tpapStatus:${JSON.stringify(r.tpapStatus)}, tpapRemarks:${JSON.stringify(r.tpapRemarks)}, timestamp:'${r.timestamp}'})">📤</button>
             </td>
         `;
     });
@@ -818,6 +958,7 @@ function switchTab(tab){
     if(tab === 'records') loadMyRecords(); 
 }
 
+// Initialize
 document.addEventListener('DOMContentLoaded', function() {
     if (!currentLGU) {
         window.location.href = 'index.html';
@@ -835,6 +976,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.switchTab = switchTab;
     window.loadMyRecords = loadMyRecords;
     window.logout = logout;
+    window.syncAllToGoogleSheets = syncAllToGoogleSheets;
+    window.sendToGoogleSheets = sendToGoogleSheets;
+    window.exportToCSV = exportToCSV;
 });
 
 window.logout = logout;
