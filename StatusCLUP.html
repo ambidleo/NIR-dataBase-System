@@ -466,7 +466,7 @@
     const session = localStorage.getItem('clup_user_session');
     
     if (!session) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
     
@@ -474,7 +474,7 @@
         const userSession = JSON.parse(session);
         if (!userSession.loggedIn || !userSession.username) {
             localStorage.removeItem('clup_user_session');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
             return;
         }
         
@@ -484,14 +484,14 @@
         const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
         if (hoursDiff > 8) {
             localStorage.removeItem('clup_user_session');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
             return;
         }
         
         window.currentUser = userSession;
     } catch (e) {
         localStorage.removeItem('clup_user_session');
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 })();
