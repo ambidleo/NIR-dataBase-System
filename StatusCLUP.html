@@ -182,18 +182,6 @@
             cursor: not-allowed;
         }
         
-        /* LGU Select Styling */
-        .lgu-select {
-            width: 100%;
-            padding: 0.85rem 1rem;
-            border: 1.5px solid #e2eef0;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-family: "Inter", sans-serif;
-            background-color: #f5f7f6;
-            cursor: not-allowed;
-        }
-        
         .radio-group {
             display: flex;
             gap: 1.5rem;
@@ -212,7 +200,7 @@
             font-weight: 500;
         }
         
-        /* PHASE TABLE with file attachments */
+        /* PHASE TABLE with file attachments and remarks */
         .phase-table {
             width: 100%;
             border-collapse: collapse;
@@ -268,6 +256,21 @@
             font-size: 0.65rem;
             cursor: pointer;
             margin-left: 8px;
+        }
+        .remark-input {
+            width: 220px;
+            padding: 0.5rem 0.75rem;
+            border: 1.5px solid #e2eef0;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-family: "Inter", sans-serif;
+            background: white;
+            transition: 0.2s;
+        }
+        .remark-input:focus {
+            outline: none;
+            border-color: #166953;
+            box-shadow: 0 0 0 3px rgba(22,105,83,0.1);
         }
         
         /* Buttons */
@@ -343,14 +346,6 @@
             text-align: center;
             font-size: 0.8rem;
         }
-        .lgu-badge {
-            background: #e8f0fe;
-            color: #166953;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
         .info-note {
             background: #e8f0fe;
             border-left: 4px solid #166953;
@@ -365,6 +360,7 @@
             .card-body { padding: 1.2rem; }
             .phase-table th, .phase-table td { padding: 0.7rem; }
             .phase-status-select { width: 110px; }
+            .remark-input { width: 140px; }
             .header { flex-direction: column; text-align: center; }
         }
     </style>
@@ -388,11 +384,11 @@
     <!-- CLUP TAB -->
     <div id="clupTab" class="tab-content">
         <div class="card">
-            <div class="card-header"><h2>📝 CLUP Information + Phase-wise File Uploads</h2></div>
+            <div class="card-header"><h2>📝 CLUP Information + Phase-wise File Uploads & Remarks</h2></div>
             <div class="card-body">
                 <div class="info-note">
                     ⚠️ <strong>Note:</strong> You are logged in as <strong id="currentLguDisplay"></strong>. 
-                    You can only manage CLUP data for your own LGU.
+                    You can only manage CLUP data for your own LGU. Use the "Remarks" column to add notes for each phase.
                 </div>
                 <form id="clupForm">
                     <div class="form-grid">
@@ -413,10 +409,19 @@
                     <div class="input-group"><label class="required">📌 CLUP Status</label><div class="radio-group"><label class="radio-option"><input type="radio" name="clupStatus" value="Updated"> ✅ Updated (within planning period)</label><label class="radio-option"><input type="radio" name="clupStatus" value="For updating"> 🔄 For updating</label><label class="radio-option"><input type="radio" name="clupStatus" value="No CLUP"> ❌ No CLUP</label></div></div>
                     <hr>
                     
-                    <!-- TPAP Phase Table -->
-                    <div class="input-group"><label>⚙️ CLUP Preparation / TPAP Phase Status + Supporting Documents</label>
+                    <!-- TPAP Phase Table with Remarks Column -->
+                    <div class="input-group"><label>⚙️ CLUP Preparation / TPAP Phase Status + Remarks + Supporting Documents</label>
                         <table class="phase-table" id="tpapTable">
-                            <thead><tr><th>Phase</th><th>Definition</th><th>Status</th><th>Means of Verification (MOV)</th><th>📎 Upload File (MOV/Evidence)</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Phase</th>
+                                    <th>Definition</th>
+                                    <th>Status</th>
+                                    <th>📝 Remarks</th>
+                                    <th>Means of Verification (MOV)</th>
+                                    <th>📎 Upload File (MOV/Evidence)</th>
+                                </tr>
+                            </thead>
                             <tbody id="tpapBody"></tbody>
                         </table>
                     </div>
@@ -429,13 +434,13 @@
                             <option>RA 6 – Adopted & enacted</option><option>RA 7 – For DHSUD approval</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-success btn-submit">💾 Save CLUP Record (with files)</button>
+                    <button type="submit" class="btn btn-success btn-submit">💾 Save CLUP Record (with files & remarks)</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- RECORDS TAB - Shows ONLY logged-in LGU's records -->
+    <!-- RECORDS TAB -->
     <div id="recordsTab" class="tab-content" style="display: none;">
         <div class="card">
             <div class="card-header">
@@ -458,7 +463,7 @@
         </div>
     </div>
 </div>
-<footer class="footer"><p>DHSUD Region VI — ELUPDD Integrated Database | LGU-Specific Access | TPAP Phase File Attachments</p></footer>
+<footer class="footer"><p>DHSUD Region VI — ELUPDD Integrated Database | LGU-Specific Access | TPAP Phase File Attachments & Remarks</p></footer>
 
 <script>
 // ==================== LOGIN CHECK & SESSION VALIDATION ====================
@@ -478,7 +483,6 @@
             return;
         }
         
-        // Check session expiry (8 hours)
         const loginTime = new Date(userSession.loginTime);
         const now = new Date();
         const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
@@ -496,7 +500,7 @@
     }
 })();
 
-// Logout function
+// Logout function - redirects to index.html
 function logout() {
     localStorage.removeItem('clup_user_session');
     window.location.href = 'index.html';
@@ -504,74 +508,12 @@ function logout() {
 
 // ==================== MAIN APPLICATION ====================
 
-// MASTER LGU DATABASE (Grouped by Province)
 const masterLguList = [
     { name: "Bacolod City", province: "Negros Occidental", type: "City" },
-    { name: "Bago City", province: "Negros Occidental", type: "City" },
-    { name: "Cadiz City", province: "Negros Occidental", type: "City" },
-    { name: "Escalante City", province: "Negros Occidental", type: "City" },
-    { name: "Himamaylan City", province: "Negros Occidental", type: "City" },
-    { name: "Kabankalan City", province: "Negros Occidental", type: "City" },
-    { name: "La Carlota City", province: "Negros Occidental", type: "City" },
-    { name: "Sagay City", province: "Negros Occidental", type: "City" },
-    { name: "San Carlos City", province: "Negros Occidental", type: "City" },
-    { name: "Silay City", province: "Negros Occidental", type: "City" },
-    { name: "Sipalay City", province: "Negros Occidental", type: "City" },
-    { name: "Talisay City", province: "Negros Occidental", type: "City" },
-    { name: "Victorias City", province: "Negros Occidental", type: "City" },
-    { name: "Binalbagan", province: "Negros Occidental", type: "Municipality" },
-    { name: "Calatrava", province: "Negros Occidental", type: "Municipality" },
-    { name: "Candoni", province: "Negros Occidental", type: "Municipality" },
-    { name: "Cauayan", province: "Negros Occidental", type: "Municipality" },
-    { name: "Enrique B. Magalona", province: "Negros Occidental", type: "Municipality" },
-    { name: "Hinigaran", province: "Negros Occidental", type: "Municipality" },
-    { name: "Hinoba-an", province: "Negros Occidental", type: "Municipality" },
-    { name: "Ilog", province: "Negros Occidental", type: "Municipality" },
-    { name: "Isabela", province: "Negros Occidental", type: "Municipality" },
-    { name: "La Castellana", province: "Negros Occidental", type: "Municipality" },
-    { name: "Manapla", province: "Negros Occidental", type: "Municipality" },
-    { name: "Moises Padilla", province: "Negros Occidental", type: "Municipality" },
-    { name: "Murcia", province: "Negros Occidental", type: "Municipality" },
-    { name: "Pontevedra", province: "Negros Occidental", type: "Municipality" },
-    { name: "Pulupandan", province: "Negros Occidental", type: "Municipality" },
-    { name: "Salvador Benedicto", province: "Negros Occidental", type: "Municipality" },
-    { name: "San Enrique", province: "Negros Occidental", type: "Municipality" },
-    { name: "Toboso", province: "Negros Occidental", type: "Municipality" },
-    { name: "Valladolid", province: "Negros Occidental", type: "Municipality" },
     { name: "Dumaguete City", province: "Negros Oriental", type: "City" },
-    { name: "Bais City", province: "Negros Oriental", type: "City" },
-    { name: "Bayawan City", province: "Negros Oriental", type: "City" },
-    { name: "Canlaon City", province: "Negros Oriental", type: "City" },
-    { name: "Guihulngan City", province: "Negros Oriental", type: "City" },
-    { name: "Tanjay City", province: "Negros Oriental", type: "City" },
-    { name: "Amlan", province: "Negros Oriental", type: "Municipality" },
-    { name: "Ayungon", province: "Negros Oriental", type: "Municipality" },
-    { name: "Bacong", province: "Negros Oriental", type: "Municipality" },
-    { name: "Basay", province: "Negros Oriental", type: "Municipality" },
-    { name: "Bindoy", province: "Negros Oriental", type: "Municipality" },
-    { name: "Dauin", province: "Negros Oriental", type: "Municipality" },
-    { name: "Jimalalud", province: "Negros Oriental", type: "Municipality" },
-    { name: "La Libertad", province: "Negros Oriental", type: "Municipality" },
-    { name: "Mabinay", province: "Negros Oriental", type: "Municipality" },
-    { name: "Manjuyod", province: "Negros Oriental", type: "Municipality" },
-    { name: "Pamplona", province: "Negros Oriental", type: "Municipality" },
-    { name: "San Jose", province: "Negros Oriental", type: "Municipality" },
-    { name: "Santa Catalina", province: "Negros Oriental", type: "Municipality" },
-    { name: "Siaton", province: "Negros Oriental", type: "Municipality" },
-    { name: "Sibulan", province: "Negros Oriental", type: "Municipality" },
-    { name: "Tayasan", province: "Negros Oriental", type: "Municipality" },
-    { name: "Valencia", province: "Negros Oriental", type: "Municipality" },
-    { name: "Vallehermoso", province: "Negros Oriental", type: "Municipality" },
-    { name: "Zamboanguita", province: "Negros Oriental", type: "Municipality" },
-    { name: "Siquijor", province: "Siquijor", type: "Municipality" },
-    { name: "Enrique Villanueva", province: "Siquijor", type: "Municipality" },
-    { name: "Larena", province: "Siquijor", type: "Municipality" },
-    { name: "Lazi", province: "Siquijor", type: "Municipality" },
-    { name: "Maria", province: "Siquijor", type: "Municipality" },
-    { name: "San Juan", province: "Siquijor", type: "Municipality" }
+    { name: "Siquijor", province: "Siquijor", type: "Municipality" }
 ];
 
-// TPAP Phases data
 const tpapPhases = [
     { name: "Preparatory phase (Pre-phase)", def: "LGU created MOA and TWG, and conducted TNA.", mov: "MOA, TNA, Resolution on Creation of TWG" },
     { name: "Phase 1", def: "LGU conducted data generation and analysis using PRA.", mov: "Ecosystem Analysis, CLUP Excel Matrices" },
@@ -584,14 +526,12 @@ const tpapPhases = [
 let clupRecords = JSON.parse(localStorage.getItem('clup_records') || '[]');
 let currentEditId = null;
 
-// Get current user's LGU info
 const currentLGU = window.currentUser ? {
     name: window.currentUser.username,
     province: window.currentUser.province,
     type: window.currentUser.type
 } : null;
 
-// Display user info
 function displayUserInfo() {
     if (window.currentUser) {
         const container = document.getElementById('userInfoContainer');
@@ -606,18 +546,15 @@ function displayUserInfo() {
             `;
         }
         
-        // Update displays
         document.getElementById('currentLguDisplay').innerText = window.currentUser.username;
         document.getElementById('recordsLguDisplay').innerText = window.currentUser.username;
         
-        // Set readonly form fields with current user's info
         document.getElementById('clupProvince').value = currentLGU.province;
         document.getElementById('clupLguName').value = currentLGU.name;
         document.getElementById('clupLguType').value = currentLGU.type;
     }
 }
 
-// File handling
 function storeFileAsBase64(file) {
     return new Promise((resolve) => {
         if (!file) { resolve(null); return; }
@@ -628,7 +565,6 @@ function storeFileAsBase64(file) {
     });
 }
 
-// Build TPAP Table
 function buildTpapTableWithFiles() {
     const tbody = document.getElementById('tpapBody');
     if (!tbody) return;
@@ -638,8 +574,9 @@ function buildTpapTableWithFiles() {
         row.insertCell(0).innerHTML = `<strong>${escapeHtml(phase.name)}</strong>`;
         row.insertCell(1).innerHTML = `<span style="font-size:0.75rem;">${escapeHtml(phase.def)}</span>`;
         row.insertCell(2).innerHTML = `<select class="phase-status-select" data-phase-index="${idx}"><option value="Not Started">⭕ Not Started</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>`;
-        row.insertCell(3).innerHTML = `<div class="mov-text">📎 ${escapeHtml(phase.mov)}</div>`;
-        row.insertCell(4).innerHTML = `<div class="file-upload-area" id="file-area-${idx}">
+        row.insertCell(3).innerHTML = `<input type="text" class="remark-input" data-remark-idx="${idx}" placeholder="Optional remarks for this phase...">`;
+        row.insertCell(4).innerHTML = `<div class="mov-text">📎 ${escapeHtml(phase.mov)}</div>`;
+        row.insertCell(5).innerHTML = `<div class="file-upload-area" id="file-area-${idx}">
             <input type="file" class="file-input-small" data-phase-idx="${idx}" accept=".pdf,.doc,.docx,.jpg,.png">
             <div id="filePreview-${idx}" class="mov-text" style="margin-top:4px;"></div>
         </div>`;
@@ -664,6 +601,8 @@ async function getFinalPhaseAttachments(existingRecordPhases = null) {
     for (let i = 0; i < tpapPhases.length; i++) {
         const select = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
         const status = select ? select.value : 'Not Started';
+        const remarkInput = document.querySelector(`.remark-input[data-remark-idx="${i}"]`);
+        const remark = remarkInput ? remarkInput.value : '';
         const fileInput = document.querySelector(`.file-input-small[data-phase-idx="${i}"]`);
         let fileAttachment = null;
         if (fileInput && fileInput.files.length > 0) {
@@ -673,7 +612,7 @@ async function getFinalPhaseAttachments(existingRecordPhases = null) {
         } else if (existingRecordPhases && existingRecordPhases[i] && existingRecordPhases[i].fileAttachment) {
             fileAttachment = existingRecordPhases[i].fileAttachment;
         }
-        final.push({ phaseName: tpapPhases[i].name, status, fileAttachment, movDesc: tpapPhases[i].mov });
+        final.push({ phaseName: tpapPhases[i].name, status, remark, fileAttachment, movDesc: tpapPhases[i].mov });
     }
     return final;
 }
@@ -684,7 +623,6 @@ function setSelectedRadio(name, val) { document.querySelectorAll(`input[name="${
 async function saveClupRecord(event) {
     event.preventDefault();
     
-    // Use current user's info - cannot change
     const province = currentLGU.province;
     const lguName = currentLGU.name;
     const lguType = currentLGU.type;
@@ -696,7 +634,6 @@ async function saveClupRecord(event) {
         return; 
     }
     
-    // Check if record already exists for this LGU
     const existingRecord = clupRecords.find(r => r.lguName === lguName && r.province === province);
     if (existingRecord && !currentEditId) {
         if (!confirm(`A CLUP record already exists for ${lguName}. Do you want to update it?`)) {
@@ -707,7 +644,11 @@ async function saveClupRecord(event) {
     
     const phaseAttachments = await getFinalPhaseAttachments(null);
     const statusMap = {};
-    phaseAttachments.forEach(p => { statusMap[p.phaseName] = p.status; });
+    const remarksMap = {};
+    phaseAttachments.forEach(p => { 
+        statusMap[p.phaseName] = p.status;
+        remarksMap[p.phaseName] = p.remark || '';
+    });
     
     const record = {
         id: currentEditId || Date.now(),
@@ -715,7 +656,8 @@ async function saveClupRecord(event) {
         lguName, province, lguType,
         clupStatus, raStatus,
         tpapStatus: statusMap,
-        phaseAttachments: phaseAttachments.map(p => ({ phaseName: p.phaseName, fileAttachment: p.fileAttachment, status: p.status })),
+        tpapRemarks: remarksMap,
+        phaseAttachments: phaseAttachments.map(p => ({ phaseName: p.phaseName, fileAttachment: p.fileAttachment, status: p.status, remark: p.remark })),
         timestamp: new Date().toISOString()
     };
     
@@ -735,12 +677,10 @@ async function saveClupRecord(event) {
 }
 
 function resetClupForm() {
-    // Clear form but keep user's LGU info
     document.getElementById('clupForm').reset();
     document.querySelectorAll('input[name="clupStatus"]').forEach(r => r.checked = false);
     document.getElementById('raStatus').selectedIndex = 0;
     
-    // Keep the user's LGU info
     document.getElementById('clupProvince').value = currentLGU.province;
     document.getElementById('clupLguName').value = currentLGU.name;
     document.getElementById('clupLguType').value = currentLGU.type;
@@ -752,6 +692,8 @@ function resetClupForm() {
         if (preview) preview.innerHTML = '';
         const sel = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
         if (sel) sel.value = 'Not Started';
+        const remarkInput = document.querySelector(`.remark-input[data-remark-idx="${i}"]`);
+        if (remarkInput) remarkInput.value = '';
     }
     currentEditId = null;
 }
@@ -760,7 +702,6 @@ function editMyClupRecord(id) {
     const rec = clupRecords.find(r => r.id === id);
     if (!rec) return;
     
-    // Verify this record belongs to the logged-in user
     if (rec.lguName !== currentLGU.name || rec.province !== currentLGU.province) {
         alert("You cannot edit records from other LGUs.");
         return;
@@ -773,6 +714,10 @@ function editMyClupRecord(id) {
     for (let i=0; i<tpapPhases.length; i++) {
         const sel = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
         if (sel && rec.tpapStatus && rec.tpapStatus[tpapPhases[i].name]) sel.value = rec.tpapStatus[tpapPhases[i].name];
+        
+        const remarkInput = document.querySelector(`.remark-input[data-remark-idx="${i}"]`);
+        if (remarkInput && rec.tpapRemarks && rec.tpapRemarks[tpapPhases[i].name]) remarkInput.value = rec.tpapRemarks[tpapPhases[i].name];
+        
         const previewDiv = document.getElementById(`filePreview-${i}`);
         const attached = rec.phaseAttachments?.find(p => p.phaseName === tpapPhases[i].name);
         if (attached && attached.fileAttachment && attached.fileAttachment.data) {
@@ -812,13 +757,16 @@ function viewMyRecord(rec) {
         alert("You cannot view records from other LGUs.");
         return;
     }
-    let msg = `CLUP Record\nLGU: ${rec.lguName}\nProvince: ${rec.province}\nType: ${rec.lguType}\nStatus: ${rec.clupStatus}\nRA Code: ${rec.raStatus}\nFiles attached: ${rec.phaseAttachments?.filter(f => f.fileAttachment).length || 0} files`; 
+    let msg = `CLUP Record\nLGU: ${rec.lguName}\nProvince: ${rec.province}\nType: ${rec.lguType}\nStatus: ${rec.clupStatus}\nRA Code: ${rec.raStatus}\nFiles attached: ${rec.phaseAttachments?.filter(f => f.fileAttachment).length || 0} files\n\nRemarks by phase:\n`;
+    if (rec.tpapRemarks) {
+        for (const [phase, remark] of Object.entries(rec.tpapRemarks)) {
+            if (remark) msg += `📌 ${phase}: ${remark}\n`;
+        }
+    }
     alert(msg); 
 }
 
-// Load ONLY the logged-in LGU's records
 function loadMyRecords() {
-    // Filter records for the current LGU only
     const myRecords = clupRecords.filter(r => 
         r.lguName === currentLGU.name && 
         r.province === currentLGU.province
@@ -870,27 +818,17 @@ function switchTab(tab){
     if(tab === 'records') loadMyRecords(); 
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is logged in
     if (!currentLGU) {
         window.location.href = 'index.html';
         return;
     }
     
-    // Display user info
     displayUserInfo();
-    
-    // Build TPAP table
     buildTpapTableWithFiles();
-    
-    // Set up event listeners
     document.getElementById('clupForm').addEventListener('submit', saveClupRecord);
-    
-    // Load only this LGU's records
     loadMyRecords();
     
-    // Make functions global for onclick handlers
     window.editMyClupRecord = editMyClupRecord;
     window.deleteMyRecord = deleteMyRecord;
     window.viewMyRecord = viewMyRecord;
