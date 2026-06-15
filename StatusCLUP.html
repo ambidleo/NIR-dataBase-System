@@ -845,7 +845,6 @@ function loadMyRecords() {
             <td>${new Date(r.timestamp).toLocaleDateString()}</td>
             <td>
                 <button class="action-btn action-view" onclick='viewRecord(${JSON.stringify(r).replace(/'/g, "&#39;")})'>👁️</button>
-                <button class="action-btn action-delete" onclick="deleteRecord(${r.id})">🗑️</button>
             </td>
         `;
     });
