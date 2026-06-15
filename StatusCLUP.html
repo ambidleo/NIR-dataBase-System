@@ -74,73 +74,11 @@
             cursor: pointer;
             font-size: 0.8rem;
             transition: 0.2s;
+            text-decoration: none;
         }
         .logout-btn:hover {
             background: rgba(255,255,255,0.3);
             transform: translateY(-1px);
-        }
-        
-        /* Login Modal */
-        .modal {
-            display: flex;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 20000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        .modal-content {
-            background: white;
-            border-radius: 48px;
-            padding: 2.5rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            text-align: center;
-        }
-        .modal-content h2 {
-            color: #166953;
-            margin-bottom: 0.5rem;
-            font-size: 1.8rem;
-        }
-        .modal-content p {
-            color: #56786a;
-            margin-bottom: 1.5rem;
-        }
-        .modal-select {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e2eef0;
-            border-radius: 60px;
-            font-size: 1rem;
-            font-family: "Inter", sans-serif;
-            margin-bottom: 1rem;
-            cursor: pointer;
-        }
-        .modal-select:focus {
-            outline: none;
-            border-color: #166953;
-        }
-        .modal-btn {
-            width: 100%;
-            padding: 1rem;
-            background: #166953;
-            color: white;
-            border: none;
-            border-radius: 60px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .modal-btn:hover {
-            background: #0e4f3e;
-            transform: translateY(-2px);
         }
         
         /* Tabs */
@@ -422,42 +360,7 @@
 </head>
 <body>
 
-<!-- Login Modal -->
-<div id="loginModal" class="modal">
-    <div class="modal-content">
-        <div style="font-size: 4rem;">🏛️</div>
-        <h2>DHSUD CLUP System</h2>
-        <p>Negros Island Region</p>
-        <select id="lguSelect" class="modal-select">
-            <option value="">Select your LGU...</option>
-            <option value="Bacolod City">Bacolod City (Negros Occidental)</option>
-            <option value="Bago City">Bago City (Negros Occidental)</option>
-            <option value="Cadiz City">Cadiz City (Negros Occidental)</option>
-            <option value="Dumaguete City">Dumaguete City (Negros Oriental)</option>
-            <option value="Bais City">Bais City (Negros Oriental)</option>
-            <option value="Bayawan City">Bayawan City (Negros Oriental)</option>
-            <option value="Siquijor">Siquijor (Siquijor)</option>
-            <option value="San Juan">San Juan (Siquijor)</option>
-            <option value="Larena">Larena (Siquijor)</option>
-            <option value="Victorias City">Victorias City (Negros Occidental)</option>
-            <option value="Himamaylan City">Himamaylan City (Negros Occidental)</option>
-            <option value="Kabankalan City">Kabankalan City (Negros Occidental)</option>
-            <option value="La Carlota City">La Carlota City (Negros Occidental)</option>
-            <option value="Sagay City">Sagay City (Negros Occidental)</option>
-            <option value="San Carlos City">San Carlos City (Negros Occidental)</option>
-            <option value="Silay City">Silay City (Negros Occidental)</option>
-            <option value="Sipalay City">Sipalay City (Negros Occidental)</option>
-            <option value="Talisay City">Talisay City (Negros Occidental)</option>
-            <option value="Escalante City">Escalante City (Negros Occidental)</option>
-            <option value="Canlaon City">Canlaon City (Negros Oriental)</option>
-            <option value="Guihulngan City">Guihulngan City (Negros Oriental)</option>
-            <option value="Tanjay City">Tanjay City (Negros Oriental)</option>
-        </select>
-        <button class="modal-btn" onclick="loginWithLGU()">🔐 Login to System</button>
-    </div>
-</div>
-
-<div class="container" id="mainContainer" style="display: none;">
+<div class="container">
     <div class="header" id="mainHeader">
         <h1>
             📋 CLUP Data Entry System
@@ -517,9 +420,13 @@
                     <div class="input-group"><label class="required">✅ Review and Approval Status (RA Code)</label>
                         <select id="raStatus" class="form-control" required>
                             <option value="">-- Select RA Code --</option>
-                            <option>RA 1 – Transmitted</option><option>RA 2 – Under review</option><option>RA 3 – Under revision</option>
-                            <option>RA 4 – Returned for final review</option><option>RA 5 – Endorsed for adoption</option>
-                            <option>RA 6 – Adopted & enacted</option><option>RA 7 – For DHSUD approval</option>
+                            <option>RA 1 – Transmitted</option>
+                            <option>RA 2 – Under review</option>
+                            <option>RA 3 – Under revision</option>
+                            <option>RA 4 – Returned for final review</option>
+                            <option>RA 5 – Endorsed for adoption</option>
+                            <option>RA 6 – Adopted & enacted</option>
+                            <option>RA 7 – For DHSUD approval</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-success btn-submit">💾 Save & Sync to SheetDB</button>
@@ -560,36 +467,10 @@
 
 <script>
 // ==================== SHEETDB CONFIGURATION ====================
-// IMPORTANT: Replace this with your SheetDB API URL
-// Get it from https://sheetdb.io after connecting your Google Sheet
+// IMPORTANT: Replace this with your SheetDB API URL from https://sheetdb.io
 const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/xi3zgylxxlssx';
 
-// Master LGU Database
-const masterLguList = [
-    { name: "Bacolod City", province: "Negros Occidental", type: "City" },
-    { name: "Bago City", province: "Negros Occidental", type: "City" },
-    { name: "Cadiz City", province: "Negros Occidental", type: "City" },
-    { name: "Dumaguete City", province: "Negros Oriental", type: "City" },
-    { name: "Bais City", province: "Negros Oriental", type: "City" },
-    { name: "Bayawan City", province: "Negros Oriental", type: "City" },
-    { name: "Siquijor", province: "Siquijor", type: "Municipality" },
-    { name: "San Juan", province: "Siquijor", type: "Municipality" },
-    { name: "Larena", province: "Siquijor", type: "Municipality" },
-    { name: "Victorias City", province: "Negros Occidental", type: "City" },
-    { name: "Himamaylan City", province: "Negros Occidental", type: "City" },
-    { name: "Kabankalan City", province: "Negros Occidental", type: "City" },
-    { name: "La Carlota City", province: "Negros Occidental", type: "City" },
-    { name: "Sagay City", province: "Negros Occidental", type: "City" },
-    { name: "San Carlos City", province: "Negros Occidental", type: "City" },
-    { name: "Silay City", province: "Negros Occidental", type: "City" },
-    { name: "Sipalay City", province: "Negros Occidental", type: "City" },
-    { name: "Talisay City", province: "Negros Occidental", type: "City" },
-    { name: "Escalante City", province: "Negros Occidental", type: "City" },
-    { name: "Canlaon City", province: "Negros Oriental", type: "City" },
-    { name: "Guihulngan City", province: "Negros Oriental", type: "City" },
-    { name: "Tanjay City", province: "Negros Oriental", type: "City" }
-];
-
+// ==================== SESSION MANAGEMENT ====================
 let currentUser = null;
 let clupRecords = JSON.parse(localStorage.getItem('clup_records') || '[]');
 let currentEditId = null;
@@ -603,71 +484,37 @@ const tpapPhases = [
     { name: "Phase 5", def: "LGU prepared zoning ordinance, M&E.", mov: "Draft Zoning Ordinance, Public Hearing Docs" }
 ];
 
-// ========== Login Functions ==========
-function loginWithLGU() {
-    const select = document.getElementById('lguSelect');
-    const selectedName = select.value;
-    
-    if (!selectedName) {
-        alert('Please select your LGU');
-        return;
-    }
-    
-    const lgu = masterLguList.find(l => l.name === selectedName);
-    
-    if (!lgu) {
-        alert('LGU not found. Please try again.');
-        return;
-    }
-    
-    currentUser = {
-        username: lgu.name,
-        province: lgu.province,
-        type: lgu.type,
-        loggedIn: true,
-        loginTime: new Date().toISOString()
-    };
-    
-    localStorage.setItem('clup_user_session', JSON.stringify(currentUser));
-    
-    // Hide modal and show main content
-    document.getElementById('loginModal').style.display = 'none';
-    document.getElementById('mainContainer').style.display = 'block';
-    
-    // Initialize the app
-    initializeApp();
-}
-
-function checkLogin() {
+// ========== Session Check ==========
+function checkSession() {
     const savedSession = localStorage.getItem('clup_user_session');
-    if (savedSession) {
-        try {
-            const session = JSON.parse(savedSession);
-            const loginTime = new Date(session.loginTime);
-            const now = new Date();
-            const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
-            if (hoursDiff < 8) {
-                currentUser = session;
-                document.getElementById('loginModal').style.display = 'none';
-                document.getElementById('mainContainer').style.display = 'block';
-                initializeApp();
-                return true;
-            }
-        } catch(e) {}
+    if (!savedSession) {
+        window.location.href = 'index.html';
+        return false;
     }
     
-    // Show modal if no valid session
-    document.getElementById('loginModal').style.display = 'flex';
-    document.getElementById('mainContainer').style.display = 'none';
-    return false;
+    try {
+        const session = JSON.parse(savedSession);
+        const loginTime = new Date(session.loginTime);
+        const now = new Date();
+        const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+        
+        if (hoursDiff > 8) {
+            localStorage.removeItem('clup_user_session');
+            window.location.href = 'index.html';
+            return false;
+        }
+        
+        currentUser = session;
+        return true;
+    } catch(e) {
+        window.location.href = 'index.html';
+        return false;
+    }
 }
 
 function logout() {
     localStorage.removeItem('clup_user_session');
-    currentUser = null;
-    document.getElementById('loginModal').style.display = 'flex';
-    document.getElementById('mainContainer').style.display = 'none';
-    document.getElementById('lguSelect').value = '';
+    window.location.href = 'index.html';
 }
 
 // ========== UI Functions ==========
@@ -709,11 +556,32 @@ async function syncToSheetDB(record) {
     try {
         showLoading();
         
-        const result = await fetch(SHEETDB_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: record })
-        });
+        // First, search if record exists for this LGU
+        const searchUrl = `${SHEETDB_API_URL}/search?LGU Name=${encodeURIComponent(currentUser.username)}`;
+        const searchResponse = await fetch(searchUrl);
+        const existingRecords = await searchResponse.json();
+        
+        let result;
+        
+        if (existingRecords && existingRecords.length > 0) {
+            // Update existing record - DELETE old then INSERT new
+            const deleteUrl = `${SHEETDB_API_URL}/LGU Name/${encodeURIComponent(currentUser.username)}`;
+            await fetch(deleteUrl, { method: 'DELETE' });
+            
+            // Insert updated record
+            result = await fetch(SHEETDB_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: record })
+            });
+        } else {
+            // Insert new record
+            result = await fetch(SHEETDB_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: record })
+            });
+        }
         
         const responseData = await result.json();
         hideLoading();
@@ -1013,7 +881,10 @@ function switchTab(tab){
     if(tab === 'records') loadMyRecords(); 
 }
 
-function initializeApp() {
+// ========== Initialize ==========
+function initialize() {
+    if (!checkSession()) return;
+    
     displayUserInfo();
     buildTpapTable();
     document.getElementById('clupForm').addEventListener('submit', saveClupRecord);
@@ -1021,19 +892,16 @@ function initializeApp() {
     testSheetDBConnection();
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    checkLogin();
-    
-    // Make functions global
-    window.switchTab = switchTab;
-    window.logout = logout;
-    window.pullFromSheetDB = pullFromSheetDB;
-    window.loadMyRecords = loadMyRecords;
-    window.viewRecord = viewRecord;
-    window.deleteRecord = deleteRecord;
-    window.loginWithLGU = loginWithLGU;
-});
+// Start the app
+initialize();
+
+// Make functions global
+window.switchTab = switchTab;
+window.logout = logout;
+window.pullFromSheetDB = pullFromSheetDB;
+window.loadMyRecords = loadMyRecords;
+window.viewRecord = viewRecord;
+window.deleteRecord = deleteRecord;
 </script>
 </body>
 </html>
