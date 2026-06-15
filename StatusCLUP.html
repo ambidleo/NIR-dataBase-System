@@ -206,18 +206,19 @@
             width: 100%;
             border-collapse: collapse;
             border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            overflow-x: auto;
+            display: block;
         }
         .phase-table th, .phase-table td {
-            padding: 1rem 1rem;
+            padding: 1rem 0.8rem;
             border: 1px solid #e4edef;
             vertical-align: middle;
+            text-align: left;
         }
         .phase-table th {
             background: #f2f9f6;
             font-weight: 800;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #0f5a46;
         }
         .phase-status-select {
@@ -228,13 +229,47 @@
             font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
-            width: 140px;
+            width: 130px;
         }
         .mov-text {
             font-size: 0.7rem;
             color: #56786a;
             margin-top: 0.3rem;
             line-height: 1.3;
+        }
+        .file-input-small {
+            font-size: 0.7rem;
+            padding: 5px;
+            border: 1px dashed #bcd0c8;
+            border-radius: 30px;
+            background: #fefefe;
+            cursor: pointer;
+            width: 100%;
+        }
+        .file-preview {
+            font-size: 0.65rem;
+            color: #166953;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+        .btn-clear-file {
+            background: none;
+            border: none;
+            color: #b91c1c;
+            font-size: 0.6rem;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .file-link {
+            font-size: 0.7rem;
+            color: #2563eb;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .file-link:hover {
+            text-decoration: underline;
         }
         
         /* Buttons */
@@ -352,8 +387,8 @@
         @media (max-width: 780px) {
             .container { padding: 0 16px; }
             .card-body { padding: 1.2rem; }
-            .phase-table th, .phase-table td { padding: 0.7rem; }
-            .phase-status-select { width: 110px; }
+            .phase-table th, .phase-table td { padding: 0.5rem; }
+            .phase-status-select { width: 100px; font-size: 0.7rem; }
             .header { flex-direction: column; text-align: center; }
         }
     </style>
@@ -382,11 +417,11 @@
     <!-- CLUP TAB -->
     <div id="clupTab" class="tab-content">
         <div class="card">
-            <div class="card-header"><h2>📝 CLUP Information + Phase-wise Status</h2></div>
+            <div class="card-header"><h2>📝 CLUP Information + Phase-wise Status & Documents</h2></div>
             <div class="card-body">
                 <div class="info-note">
                     ⚠️ <strong>Note:</strong> You are logged in as <strong id="currentLguDisplay"></strong>. 
-                    Data automatically syncs to <strong>SheetDB (Google Sheets Backend)</strong>.
+                    Data automatically syncs to <strong>SheetDB (Google Sheets Backend)</strong>. Uploaded files are stored as Base64 in the sheet.
                 </div>
                 <form id="clupForm">
                     <div class="form-grid">
@@ -407,14 +442,22 @@
                     <div class="input-group"><label class="required">📌 CLUP Status</label><div class="radio-group"><label class="radio-option"><input type="radio" name="clupStatus" value="Updated"> ✅ Updated (within planning period)</label><label class="radio-option"><input type="radio" name="clupStatus" value="For updating"> 🔄 For updating</label><label class="radio-option"><input type="radio" name="clupStatus" value="No CLUP"> ❌ No CLUP</label></div></div>
                     <hr>
                     
-                    <!-- TPAP Phase Table -->
-                    <div class="input-group"><label>⚙️ CLUP Preparation / TPAP Phase Status</label>
-                        <table class="phase-table" id="tpapTable">
-                            <thead>
-                                <tr><th>Phase</th><th>Definition</th><th>Status</th><th>Means of Verification (MOV)</th></tr>
-                            </thead>
-                            <tbody id="tpapBody"></tbody>
-                        </table>
+                    <!-- TPAP Phase Table with File Upload -->
+                    <div class="input-group"><label>⚙️ CLUP Preparation / TPAP Phase Status + Supporting Documents</label>
+                        <div style="overflow-x: auto;">
+                            <table class="phase-table" id="tpapTable">
+                                <thead>
+                                    <tr>
+                                        <th>Phase</th>
+                                        <th>Definition</th>
+                                        <th>Status</th>
+                                        <th>Means of Verification (MOV)</th>
+                                        <th>📎 Upload File</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tpapBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                     <hr>
                     <div class="input-group"><label class="required">✅ Review and Approval Status (RA Code)</label>
@@ -440,7 +483,7 @@
         <div class="card">
             <div class="card-header">
                 <h2>📊 My CLUP Records</h2>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="pullFromSheetDB()">☁️ Pull from Cloud</button>
                     <button class="btn btn-primary" onclick="loadMyRecords()">🔄 Refresh Local</button>
                 </div>
@@ -453,9 +496,11 @@
                 <div class="table-wrapper">
                     <table class="data-table">
                         <thead>
-                            <tr><th>LGU</th><th>Province</th><th>LGU Type</th><th>Status</th><th>RA Code</th><th>TPAP Summary</th><th>Date</th><th>Actions</th></tr>
+                            <tr>
+                                <th>LGU</th><th>Province</th><th>LGU Type</th><th>Status</th><th>RA Code</th><th>TPAP Summary</th><th>Files</th><th>Date</th><th>Actions</th>
+                            </tr>
                         </thead>
-                        <tbody id="recordsTableBody"><tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
+                        <tbody id="recordsTableBody"><tr><td colspan="9" style="text-align:center;">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -474,6 +519,7 @@ const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/xi3zgylxxlssx';
 let currentUser = null;
 let clupRecords = JSON.parse(localStorage.getItem('clup_records') || '[]');
 let currentEditId = null;
+let phaseFiles = {}; // Store file data for each phase
 
 const tpapPhases = [
     { name: "Preparatory phase (Pre-phase)", def: "LGU created MOA and TWG, and conducted TNA.", mov: "MOA, TNA, Resolution on Creation of TWG" },
@@ -517,6 +563,117 @@ function logout() {
     window.location.href = 'index.html';
 }
 
+// ========== File Handling Functions ==========
+function storeFileAsBase64(file) {
+    return new Promise((resolve) => {
+        if (!file) { resolve(null); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ 
+            name: file.name, 
+            data: e.target.result, 
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified
+        });
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+    });
+}
+
+function getFileIcon(fileType) {
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word') || fileType.includes('document')) return '📝';
+    if (fileType.includes('excel') || fileType.includes('sheet')) return '📊';
+    if (fileType.includes('image')) return '🖼️';
+    return '📎';
+}
+
+function formatFileSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// ========== Build TPAP Table with File Upload ==========
+function buildTpapTable() {
+    const tbody = document.getElementById('tpapBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    tpapPhases.forEach((phase, idx) => {
+        const row = tbody.insertRow();
+        row.insertCell(0).innerHTML = `<strong>${escapeHtml(phase.name)}</strong>`;
+        row.insertCell(1).innerHTML = `<span style="font-size:0.75rem;">${escapeHtml(phase.def)}</span>`;
+        row.insertCell(2).innerHTML = `<select class="phase-status-select" data-phase-index="${idx}">
+            <option value="Not Started">⭕ Not Started</option>
+            <option value="Ongoing">🔄 Ongoing</option>
+            <option value="Completed">✅ Completed</option>
+        </select>`;
+        row.insertCell(3).innerHTML = `<div class="mov-text">📎 ${escapeHtml(phase.mov)}</div>`;
+        
+        // File upload cell
+        const fileCell = row.insertCell(4);
+        fileCell.innerHTML = `
+            <div class="file-upload-area">
+                <input type="file" class="file-input-small" data-phase-idx="${idx}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.zip">
+                <div id="filePreview-${idx}" class="file-preview"></div>
+            </div>
+        `;
+    });
+    
+    // Add file input event listeners
+    document.querySelectorAll('.file-input-small').forEach(input => {
+        input.addEventListener('change', async (e) => {
+            const idx = parseInt(input.getAttribute('data-phase-idx'));
+            const file = e.target.files[0];
+            if (file && !isNaN(idx)) {
+                const previewDiv = document.getElementById(`filePreview-${idx}`);
+                if (previewDiv) {
+                    const fileData = await storeFileAsBase64(file);
+                    if (fileData) {
+                        phaseFiles[idx] = fileData;
+                        previewDiv.innerHTML = `
+                            ${getFileIcon(file.type)} ${escapeHtml(file.name)} (${formatFileSize(file.size)})
+                            <button type="button" class="btn-clear-file" data-clear-idx="${idx}">✖ clear</button>
+                        `;
+                        const clearBtn = previewDiv.querySelector('.btn-clear-file');
+                        if (clearBtn) {
+                            clearBtn.onclick = (e) => {
+                                e.preventDefault();
+                                input.value = '';
+                                delete phaseFiles[idx];
+                                previewDiv.innerHTML = '';
+                            };
+                        }
+                    }
+                }
+            }
+        });
+    });
+}
+
+function getPhaseStatuses() {
+    const statuses = {};
+    for (let i = 0; i < tpapPhases.length; i++) {
+        const select = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
+        if (select) {
+            statuses[tpapPhases[i].name] = select.value;
+        }
+    }
+    return statuses;
+}
+
+function getPhaseFiles() {
+    const files = {};
+    for (let i = 0; i < tpapPhases.length; i++) {
+        if (phaseFiles[i]) {
+            files[tpapPhases[i].name] = phaseFiles[i];
+        }
+    }
+    return files;
+}
+
 // ========== UI Functions ==========
 function showLoading() {
     document.getElementById('loadingOverlay').classList.add('show');
@@ -551,12 +708,33 @@ function displayUserInfo() {
     }
 }
 
+function getSelectedRadio(name) { 
+    const r = document.querySelector(`input[name="${name}"]:checked`); 
+    return r ? r.value : ''; 
+}
+
+function buildTPAPSummary(tpapStatus) {
+    const summary = [];
+    const phaseIcons = {
+        "Completed": "✅",
+        "Ongoing": "🔄",
+        "Not Started": "⭕"
+    };
+    
+    for (const [phase, status] of Object.entries(tpapStatus)) {
+        const icon = phaseIcons[status] || "⭕";
+        const shortName = phase.replace(" phase (Pre-phase)", "").replace("Phase ", "P");
+        summary.push(`${icon} ${shortName}: ${status}`);
+    }
+    return summary.join(" | ");
+}
+
 // ========== SheetDB Integration ==========
 async function syncToSheetDB(record) {
     try {
         showLoading();
         
-        // First, search if record exists for this LGU
+        // Search for existing record
         const searchUrl = `${SHEETDB_API_URL}/search?LGU Name=${encodeURIComponent(currentUser.username)}`;
         const searchResponse = await fetch(searchUrl);
         const existingRecords = await searchResponse.json();
@@ -564,24 +742,15 @@ async function syncToSheetDB(record) {
         let result;
         
         if (existingRecords && existingRecords.length > 0) {
-            // Update existing record - DELETE old then INSERT new
             const deleteUrl = `${SHEETDB_API_URL}/LGU Name/${encodeURIComponent(currentUser.username)}`;
             await fetch(deleteUrl, { method: 'DELETE' });
-            
-            // Insert updated record
-            result = await fetch(SHEETDB_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: record })
-            });
-        } else {
-            // Insert new record
-            result = await fetch(SHEETDB_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: record })
-            });
         }
+        
+        result = await fetch(SHEETDB_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: record })
+        });
         
         const responseData = await result.json();
         hideLoading();
@@ -614,34 +783,50 @@ async function pullFromSheetDB() {
         const allRecords = await response.json();
         hideLoading();
         
-        // Filter records for current LGU
         const userRecords = allRecords.filter(record => 
             record["LGU Name"] === currentUser.username && 
             record["Province"] === currentUser.province
         );
         
-        // Convert to frontend format
-        const convertedRecords = userRecords.map(record => ({
-            id: record["Record ID"] || Date.now(),
-            timestamp: record["Timestamp"] || new Date().toISOString(),
-            lguName: record["LGU Name"],
-            province: record["Province"],
-            lguType: record["LGU Type"],
-            clupStatus: record["CLUP Status"],
-            raStatus: record["RA Code"],
-            tpapStatus: {
-                "Preparatory phase (Pre-phase)": record["Preparatory Phase Status"] || "Not Started",
-                "Phase 1": record["Phase 1 Status"] || "Not Started",
-                "Phase 2": record["Phase 2 Status"] || "Not Started",
-                "Phase 3": record["Phase 3 Status"] || "Not Started",
-                "Phase 4": record["Phase 4 Status"] || "Not Started",
-                "Phase 5": record["Phase 5 Status"] || "Not Started"
-            },
-            tpapRemarks: {},
-            phaseAttachments: []
-        }));
+        const convertedRecords = userRecords.map(record => {
+            // Parse file attachments from JSON strings
+            const parseFile = (fileStr) => {
+                if (!fileStr) return null;
+                try {
+                    return typeof fileStr === 'string' ? JSON.parse(fileStr) : fileStr;
+                } catch(e) {
+                    return null;
+                }
+            };
+            
+            return {
+                id: record["Record ID"] || Date.now(),
+                timestamp: record["Timestamp"] || new Date().toISOString(),
+                lguName: record["LGU Name"],
+                province: record["Province"],
+                lguType: record["LGU Type"],
+                clupStatus: record["CLUP Status"],
+                raStatus: record["RA Code"],
+                tpapStatus: {
+                    "Preparatory phase (Pre-phase)": record["Preparatory Phase Status"] || "Not Started",
+                    "Phase 1": record["Phase 1 Status"] || "Not Started",
+                    "Phase 2": record["Phase 2 Status"] || "Not Started",
+                    "Phase 3": record["Phase 3 Status"] || "Not Started",
+                    "Phase 4": record["Phase 4 Status"] || "Not Started",
+                    "Phase 5": record["Phase 5 Status"] || "Not Started"
+                },
+                phaseAttachments: {
+                    "Preparatory phase (Pre-phase)": parseFile(record["Preparatory Phase File"]),
+                    "Phase 1": parseFile(record["Phase 1 File"]),
+                    "Phase 2": parseFile(record["Phase 2 File"]),
+                    "Phase 3": parseFile(record["Phase 3 File"]),
+                    "Phase 4": parseFile(record["Phase 4 File"]),
+                    "Phase 5": parseFile(record["Phase 5 File"])
+                },
+                tpapRemarks: {}
+            };
+        });
         
-        // Merge with local storage
         for (const cloudRecord of convertedRecords) {
             const existingIndex = clupRecords.findIndex(r => 
                 r.lguName === cloudRecord.lguName && r.province === cloudRecord.province
@@ -682,52 +867,7 @@ async function testSheetDBConnection() {
     }
 }
 
-// ========== Local Storage Management ==========
-function buildTpapTable() {
-    const tbody = document.getElementById('tpapBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    tpapPhases.forEach((phase, idx) => {
-        const row = tbody.insertRow();
-        row.insertCell(0).innerHTML = `<strong>${escapeHtml(phase.name)}</strong>`;
-        row.insertCell(1).innerHTML = `<span style="font-size:0.75rem;">${escapeHtml(phase.def)}</span>`;
-        row.insertCell(2).innerHTML = `<select class="phase-status-select" data-phase-index="${idx}"><option value="Not Started">⭕ Not Started</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>`;
-        row.insertCell(3).innerHTML = `<div class="mov-text">📎 ${escapeHtml(phase.mov)}</div>`;
-    });
-}
-
-function getPhaseStatuses() {
-    const statuses = {};
-    for (let i = 0; i < tpapPhases.length; i++) {
-        const select = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
-        if (select) {
-            statuses[tpapPhases[i].name] = select.value;
-        }
-    }
-    return statuses;
-}
-
-function getSelectedRadio(name) { 
-    const r = document.querySelector(`input[name="${name}"]:checked`); 
-    return r ? r.value : ''; 
-}
-
-function buildTPAPSummary(tpapStatus) {
-    const summary = [];
-    const phaseIcons = {
-        "Completed": "✅",
-        "Ongoing": "🔄",
-        "Not Started": "⭕"
-    };
-    
-    for (const [phase, status] of Object.entries(tpapStatus)) {
-        const icon = phaseIcons[status] || "⭕";
-        const shortName = phase.replace(" phase (Pre-phase)", "").replace("Phase ", "P");
-        summary.push(`${icon} ${shortName}: ${status}`);
-    }
-    return summary.join(" | ");
-}
-
+// ========== Save Record ==========
 async function saveClupRecord(event) {
     event.preventDefault();
     
@@ -740,11 +880,12 @@ async function saveClupRecord(event) {
     }
     
     const tpapStatus = getPhaseStatuses();
+    const phaseFilesData = getPhaseFiles();
     const tpapSummary = buildTPAPSummary(tpapStatus);
     const now = new Date().toISOString();
     const recordId = currentEditId || Date.now();
     
-    // Prepare record for SheetDB (matches your column headers)
+    // Prepare record for SheetDB with file data
     const sheetRecord = {
         "Record ID": recordId,
         "Timestamp": now,
@@ -765,12 +906,12 @@ async function saveClupRecord(event) {
         "Phase 4 Remarks": "",
         "Phase 5 Status": tpapStatus["Phase 5"] || "Not Started",
         "Phase 5 Remarks": "",
-        "Preparatory Phase File": "",
-        "Phase 1 File": "",
-        "Phase 2 File": "",
-        "Phase 3 File": "",
-        "Phase 4 File": "",
-        "Phase 5 File": "",
+        "Preparatory Phase File": phaseFilesData["Preparatory phase (Pre-phase)"] ? JSON.stringify(phaseFilesData["Preparatory phase (Pre-phase)"]) : "",
+        "Phase 1 File": phaseFilesData["Phase 1"] ? JSON.stringify(phaseFilesData["Phase 1"]) : "",
+        "Phase 2 File": phaseFilesData["Phase 2"] ? JSON.stringify(phaseFilesData["Phase 2"]) : "",
+        "Phase 3 File": phaseFilesData["Phase 3"] ? JSON.stringify(phaseFilesData["Phase 3"]) : "",
+        "Phase 4 File": phaseFilesData["Phase 4"] ? JSON.stringify(phaseFilesData["Phase 4"]) : "",
+        "Phase 5 File": phaseFilesData["Phase 5"] ? JSON.stringify(phaseFilesData["Phase 5"]) : "",
         "TPAP Summary": tpapSummary,
         "Remarks Summary": "",
         "Last Updated": now
@@ -786,8 +927,8 @@ async function saveClupRecord(event) {
         clupStatus: clupStatus,
         raStatus: raStatus,
         tpapStatus: tpapStatus,
-        tpapRemarks: {},
-        phaseAttachments: []
+        phaseAttachments: phaseFilesData,
+        tpapRemarks: {}
     };
     
     const existingIndex = clupRecords.findIndex(r => r.lguName === localRecord.lguName && r.province === localRecord.province);
@@ -811,22 +952,30 @@ async function saveClupRecord(event) {
     document.getElementById('clupForm').reset();
     document.querySelectorAll('input[name="clupStatus"]').forEach(r => r.checked = false);
     document.getElementById('raStatus').selectedIndex = 0;
+    
+    // Reset phase statuses and files
     for (let i = 0; i < tpapPhases.length; i++) {
         const sel = document.querySelector(`.phase-status-select[data-phase-index="${i}"]`);
         if (sel) sel.value = 'Not Started';
+        const preview = document.getElementById(`filePreview-${i}`);
+        if (preview) preview.innerHTML = '';
+        const fileInput = document.querySelector(`.file-input-small[data-phase-idx="${i}"]`);
+        if (fileInput) fileInput.value = '';
     }
+    phaseFiles = {};
     currentEditId = null;
     
     loadMyRecords();
     switchTab('records');
 }
 
+// ========== Load Records ==========
 function loadMyRecords() {
     const myRecords = clupRecords.filter(r => r.lguName === currentUser.username && r.province === currentUser.province);
     const tbody = document.getElementById('recordsTableBody');
     
     if(myRecords.length === 0){ 
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No CLUP records found. Create your first record in the Data Entry tab.</td></tr>'; 
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No CLUP records found. Create your first record in the Data Entry tab.</td></tr>';
         return; 
     }
     
@@ -835,28 +984,65 @@ function loadMyRecords() {
         const row = tbody.insertRow();
         const tpapSummary = buildTPAPSummary(r.tpapStatus || {});
         
+        // Build file links display
+        let filesHtml = '';
+        if (r.phaseAttachments) {
+            const phaseList = ['Preparatory phase (Pre-phase)', 'Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5'];
+            for (const phase of phaseList) {
+                const file = r.phaseAttachments[phase];
+                if (file && file.data) {
+                    filesHtml += `<div><a href="${file.data}" download="${escapeHtml(file.name)}" class="file-link" target="_blank">${getFileIcon(file.type)} ${escapeHtml(file.name)}</a></div>`;
+                }
+            }
+        }
+        if (!filesHtml) filesHtml = '<span style="color:#999;">No files</span>';
+        
         row.innerHTML = `
             <td><strong>${escapeHtml(r.lguName)}</strong></td>
             <td>${escapeHtml(r.province)}</td>
             <td>${escapeHtml(r.lguType)}</td>
             <td><span class="status-badge ${r.clupStatus === 'Updated' ? 'status-updated' : (r.clupStatus === 'For updating' ? 'status-for-updating' : 'status-no')}">${escapeHtml(r.clupStatus)}</span></td>
             <td style="font-size:0.7rem;">${escapeHtml(r.raStatus)}</td>
-            <td style="font-size:0.7rem;">${tpapSummary.substring(0, 100)}${tpapSummary.length > 100 ? '...' : ''}</td>
+            <td style="font-size:0.7rem;">${tpapSummary.substring(0, 80)}${tpapSummary.length > 80 ? '...' : ''}</td>
+            <td style="font-size:0.7rem;">${filesHtml}</td>
             <td>${new Date(r.timestamp).toLocaleDateString()}</td>
             <td>
                 <button class="action-btn action-view" onclick='viewRecord(${JSON.stringify(r).replace(/'/g, "&#39;")})'>👁️</button>
+                <button class="action-btn action-delete" onclick="deleteRecord(${r.id})">🗑️</button>
             </td>
         `;
     });
 }
 
 function viewRecord(rec) { 
-    let msg = `📋 CLUP Record\nLGU: ${rec.lguName}\nProvince: ${rec.province}\nStatus: ${rec.clupStatus}\nRA Code: ${rec.raStatus}\n\nTPAP Status:\n`;
+    let msg = `📋 CLUP Record\n\n`;
+    msg += `LGU: ${rec.lguName}\n`;
+    msg += `Province: ${rec.province}\n`;
+    msg += `Type: ${rec.lguType}\n`;
+    msg += `Status: ${rec.clupStatus}\n`;
+    msg += `RA Code: ${rec.raStatus}\n\n`;
+    msg += `📌 TPAP Status:\n`;
+    
     if (rec.tpapStatus) {
         for (const [phase, status] of Object.entries(rec.tpapStatus)) {
-            msg += `\n${phase}: ${status}`;
+            msg += `  ${phase}: ${status}\n`;
         }
     }
+    
+    msg += `\n📎 Attached Files:\n`;
+    if (rec.phaseAttachments) {
+        let hasFiles = false;
+        for (const [phase, file] of Object.entries(rec.phaseAttachments)) {
+            if (file && file.name) {
+                msg += `  ${phase}: ${file.name}\n`;
+                hasFiles = true;
+            }
+        }
+        if (!hasFiles) msg += `  No files attached\n`;
+    } else {
+        msg += `  No files attached\n`;
+    }
+    
     alert(msg); 
 }
 
